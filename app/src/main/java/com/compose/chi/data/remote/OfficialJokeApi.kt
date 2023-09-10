@@ -8,4 +8,6 @@ interface JokeApi {
     @GET("/random_joke")
     suspend fun getJoke() : JokeDto
 
+    @GET("random_ten")
+    suspend fun getTenJokes(): List<JokeDto>
 }
