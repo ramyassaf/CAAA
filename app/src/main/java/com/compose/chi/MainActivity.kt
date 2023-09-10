@@ -10,11 +10,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.compose.chi.analytics.AnalyticsLogger
+import com.compose.chi.analytics.AnalyticsLoggerImpl
 import com.compose.chi.ui.theme.CHITheme
 
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity(), AnalyticsLogger by AnalyticsLoggerImpl() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Call AnalyticsLogger Interface function
+        registerLifecycleOwner(this)
+
         setContent {
             CHITheme {
                 // A surface container using the 'background' color from the theme
