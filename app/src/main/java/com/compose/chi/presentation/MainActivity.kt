@@ -1,4 +1,4 @@
-package com.compose.chi.presentation.ui
+package com.compose.chi.presentation
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
