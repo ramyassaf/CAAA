@@ -1,4 +1,4 @@
-package com.compose.chi
+package com.compose.chi.presentation.ui
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.compose.chi.analytics.AnalyticsLogger
 import com.compose.chi.analytics.AnalyticsLoggerImpl
-import com.compose.chi.ui.theme.CHITheme
+import com.compose.chi.presentation.ui.theme.CHITheme
 
 class MainActivity : ComponentActivity(), AnalyticsLogger by AnalyticsLoggerImpl() {
     override fun onCreate(savedInstanceState: Bundle?) {
