@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name="com.compose.chi.ChiApp"
         android:allowBackup="true"
@@ -12,7 +14,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.CHI"
-        tools:targetApi="31">
+        tools:targetApi="33">
         <activity
             android:name="com.compose.chi.presentation.MainActivity"
             android:exported="true"
