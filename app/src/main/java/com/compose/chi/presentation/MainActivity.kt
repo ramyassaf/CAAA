@@ -3,15 +3,13 @@ package com.compose.chi.presentation
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.compose.chi.ChiApp
 import com.compose.chi.analytics.AnalyticsLogger
 import com.compose.chi.analytics.AnalyticsLoggerImpl
+import com.compose.chi.domain.use_case.GetJokeUseCase
+import com.compose.chi.presentation.joke_home_page.JokeHomeScreen
+import com.compose.chi.presentation.joke_home_page.JokeHomeViewModel
 import com.compose.chi.presentation.ui.theme.CHITheme
 
 class MainActivity : ComponentActivity(), AnalyticsLogger by AnalyticsLoggerImpl() {
@@ -23,30 +21,14 @@ class MainActivity : ComponentActivity(), AnalyticsLogger by AnalyticsLoggerImpl
 
         setContent {
             CHITheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    Greeting("Android")
-                }
+                val homeViewModel = viewModel<JokeHomeViewModel>(
+                    factory = viewModelFactory {
+                        val getJokeUseCase: GetJokeUseCase = GetJokeUseCase(ChiApp.appModule.jokeRepository)
+                        JokeHomeViewModel(getJokeUseCase)
+                    }
+                )
+                JokeHomeScreen(viewModel = homeViewModel)
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    CHITheme {
-        Greeting("Android")
     }
 }
