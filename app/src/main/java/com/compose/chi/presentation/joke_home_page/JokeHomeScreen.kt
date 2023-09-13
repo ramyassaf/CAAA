@@ -43,7 +43,8 @@ fun JokeHomeScreen(
                 },
                 onClick10NewJokes = {
                     //TODO: Navigate to 10 jokes page
-                })
+                }
+            )
         }
         if(state.error.isNotBlank()) {
             Text(
@@ -57,14 +58,16 @@ fun JokeHomeScreen(
             )
         }
         if(state.isLoading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+//            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            JokeHomeScreenContent(joke = null, true,  {}, {})
         }
     }
 }
 
 @Composable
 private fun JokeHomeScreenContent(
-    joke: Joke,
+    joke: Joke?,
+    isLoading: Boolean = false,
     onClickNewJoke: () -> Unit,
     onClick10NewJokes: () -> Unit
 ) {
@@ -86,19 +89,23 @@ private fun JokeHomeScreenContent(
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center,
-                    text = "Joke: '${joke.setup}'",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center,
-                    text = "Punchline: '${joke.punchline}'",
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                if(isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                } else {
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        text = "Joke: '${joke?.setup}'",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        text = "Punchline: '${joke?.punchline}'",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = onClickNewJoke,
@@ -128,6 +135,6 @@ private fun JokeHomeScreenContent(
 fun JokeHomeScreen() {
     CHITheme {
         val joke = Joke(punchline = "punchline", setup = "setup")
-        JokeHomeScreenContent(joke = joke, {}, {})
+        JokeHomeScreenContent(joke = joke, false,  {}, {})
     }
 }
