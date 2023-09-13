@@ -1,4 +1,4 @@
-package com.compose.chi.presentation
+package com.compose.chi.presentation.helpers
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

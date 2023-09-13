@@ -1,4 +1,4 @@
-package com.compose.chi.presentation.joke_home_page
+package com.compose.chi.presentation.screens.joke_home_page
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

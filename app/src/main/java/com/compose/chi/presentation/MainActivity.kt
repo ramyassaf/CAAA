@@ -8,8 +8,9 @@ import com.compose.chi.ChiApp
 import com.compose.chi.analytics.AnalyticsLogger
 import com.compose.chi.analytics.AnalyticsLoggerImpl
 import com.compose.chi.domain.use_case.GetJokeUseCase
-import com.compose.chi.presentation.joke_home_page.JokeHomeScreen
-import com.compose.chi.presentation.joke_home_page.JokeHomeViewModel
+import com.compose.chi.presentation.helpers.viewModelFactory
+import com.compose.chi.presentation.screens.joke_home_page.JokeHomeScreen
+import com.compose.chi.presentation.screens.joke_home_page.JokeHomeViewModel
 import com.compose.chi.presentation.ui.theme.CHITheme
 
 class MainActivity : ComponentActivity(), AnalyticsLogger by AnalyticsLoggerImpl() {
