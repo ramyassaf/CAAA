@@ -30,15 +30,16 @@ fun JokeListItem(
     ) {
         Text(
             text = "Setup: ${joke.setup}",
+            textAlign = TextAlign.Center,
             style = MaterialTheme.typography.bodyMedium,
-            overflow = TextOverflow.Ellipsis
+            modifier = Modifier.fillMaxWidth()
         )
         Text(
             text = "Punchline:  ${joke.punchline}",
-            fontStyle = FontStyle.Italic,
-            textAlign = TextAlign.End,
+            textAlign = TextAlign.Center,
             style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.align(CenterHorizontally)
+            fontStyle = FontStyle.Italic,
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }

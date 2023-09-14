@@ -25,11 +25,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.compose.chi.domain.model.Joke
 import com.compose.chi.presentation.ui.theme.*
 
 @Composable
 fun JokeHomeScreen(
+    navController: NavController,
     viewModel: JokeHomeViewModel
 ) {
     val state = viewModel.state.value
@@ -42,7 +44,7 @@ fun JokeHomeScreen(
                     viewModel.getJoke()
                 },
                 onClick10NewJokes = {
-                    //TODO: Navigate to 10 jokes page
+                    navController.navigate("second_tab")
                 }
             )
         }

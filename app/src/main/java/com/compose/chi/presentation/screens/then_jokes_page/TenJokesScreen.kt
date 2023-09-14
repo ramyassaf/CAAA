@@ -14,10 +14,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.compose.chi.presentation.screens.then_jokes_page.components.JokeListItem
 
 @Composable
 fun TenJokesScreen(
+    navController: NavController,
     viewModel: TenJokesViewModel
 ) {
     val state = viewModel.state.value
@@ -26,7 +28,9 @@ fun TenJokesScreen(
             items(state.jokes) { joke ->
                 JokeListItem(
                     joke = joke,
-                    onItemClick = {}
+                    onItemClick = {
+                        navController.navigate("home2")
+                    }
                 )
             }
         }
