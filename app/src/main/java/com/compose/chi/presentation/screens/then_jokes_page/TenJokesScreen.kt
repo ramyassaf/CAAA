@@ -1,4 +1,4 @@
-package com.compose.chi.presentation.then_jokes_page
+package com.compose.chi.presentation.screens.then_jokes_page
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,7 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.compose.chi.presentation.then_jokes_page.components.JokeListItem
+import com.compose.chi.presentation.screens.then_jokes_page.components.JokeListItem
 
 @Composable
 fun TenJokesScreen(
