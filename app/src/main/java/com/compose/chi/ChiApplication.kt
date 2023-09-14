@@ -5,7 +5,7 @@ import com.compose.chi.di.AppModule
 import com.compose.chi.di.AppModuleImpl
 
 // ** Manual Dependency injection
-class ChiApp: Application() {
+class ChiApplication: Application() {
 
     // companion 'static' object that can be accessed across the app (active as long as app is active)
     companion object {

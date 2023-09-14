@@ -7,7 +7,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
-import com.compose.chi.ChiApp
+import com.compose.chi.ChiApplication
 import com.compose.chi.domain.use_case.GetJokeUseCase
 import com.compose.chi.domain.use_case.GetTenJokesUseCase
 import com.compose.chi.presentation.helpers.viewModelFactory
@@ -32,7 +32,7 @@ fun AppNavHost(
         composable(Screen.FirstTabScreen.route) {
             val homeViewModel = viewModel<JokeHomeViewModel>(
                 factory = viewModelFactory {
-                    val getJokeUseCase: GetJokeUseCase = GetJokeUseCase(ChiApp.appModule.jokeRepository)
+                    val getJokeUseCase: GetJokeUseCase = GetJokeUseCase(ChiApplication.appModule.jokeRepository)
                     JokeHomeViewModel(getJokeUseCase)
                 }
             )
@@ -50,7 +50,7 @@ fun AppNavHost(
             composable(Screen.TenJokesScreen.route) {
                 val tenJokesViewModel = viewModel<TenJokesViewModel>(
                     factory = viewModelFactory {
-                        val getTenJokesUseCase: GetTenJokesUseCase = GetTenJokesUseCase(ChiApp.appModule.jokeRepository)
+                        val getTenJokesUseCase: GetTenJokesUseCase = GetTenJokesUseCase(ChiApplication.appModule.jokeRepository)
                         TenJokesViewModel(getTenJokesUseCase)
                     }
                 )
@@ -62,7 +62,7 @@ fun AppNavHost(
             composable(Screen.Home2Screen.route) {
                 val homeViewModel = viewModel<JokeHomeViewModel>(
                     factory = viewModelFactory {
-                        val getJokeUseCase: GetJokeUseCase = GetJokeUseCase(ChiApp.appModule.jokeRepository)
+                        val getJokeUseCase: GetJokeUseCase = GetJokeUseCase(ChiApplication.appModule.jokeRepository)
                         JokeHomeViewModel(getJokeUseCase)
                     }
                 )
