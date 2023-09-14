@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.compose.chi.presentation.navigation.Screen
 import com.compose.chi.presentation.screens.then_jokes_page.components.JokeListItem
 
 @Composable
@@ -29,7 +30,7 @@ fun TenJokesScreen(
                 JokeListItem(
                     joke = joke,
                     onItemClick = {
-                        navController.navigate("home2")
+                        navController.navigate(Screen.Home2Screen.route)
                     }
                 )
             }

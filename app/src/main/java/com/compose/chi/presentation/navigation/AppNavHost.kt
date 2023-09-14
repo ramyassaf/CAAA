@@ -24,12 +24,12 @@ fun AppNavHost(
     // Nested Navigation Graph
     NavHost(
         navController = navController,
-        startDestination = "first_tab",
+        startDestination = Screen.FirstTabScreen.route,
         modifier = modifier
     ) {
 
         // Screen without a navigation
-        composable("first_tab") {
+        composable(Screen.FirstTabScreen.route) {
             val homeViewModel = viewModel<JokeHomeViewModel>(
                 factory = viewModelFactory {
                     val getJokeUseCase: GetJokeUseCase = GetJokeUseCase(ChiApp.appModule.jokeRepository)
@@ -44,10 +44,10 @@ fun AppNavHost(
 
         // Screen with a navigation, a navigation inside a nav
         navigation(
-            startDestination = "ten_jokes",
-            route = "second_tab"
+            startDestination = Screen.TenJokesScreen.route,
+            route = Screen.SecondTabNavigationScreen.route
         ) {
-            composable("ten_jokes") {
+            composable(Screen.TenJokesScreen.route) {
                 val tenJokesViewModel = viewModel<TenJokesViewModel>(
                     factory = viewModelFactory {
                         val getTenJokesUseCase: GetTenJokesUseCase = GetTenJokesUseCase(ChiApp.appModule.jokeRepository)
@@ -59,7 +59,7 @@ fun AppNavHost(
                     viewModel = tenJokesViewModel
                 )
             }
-            composable("home2") {
+            composable(Screen.Home2Screen.route) {
                 val homeViewModel = viewModel<JokeHomeViewModel>(
                     factory = viewModelFactory {
                         val getJokeUseCase: GetJokeUseCase = GetJokeUseCase(ChiApp.appModule.jokeRepository)

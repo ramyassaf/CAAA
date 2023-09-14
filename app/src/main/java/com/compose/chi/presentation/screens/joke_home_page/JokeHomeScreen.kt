@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.compose.chi.domain.model.Joke
+import com.compose.chi.presentation.navigation.Screen
 import com.compose.chi.presentation.ui.theme.*
 
 @Composable
@@ -44,7 +45,7 @@ fun JokeHomeScreen(
                     viewModel.getJoke()
                 },
                 onClick10NewJokes = {
-                    navController.navigate("second_tab")
+                    navController.navigate(Screen.SecondTabNavigationScreen.route)
                 }
             )
         }

@@ -16,6 +16,7 @@ import com.compose.chi.analytics.AnalyticsLoggerImpl
 import com.compose.chi.presentation.navigation.components.BottomNavItem
 import com.compose.chi.presentation.navigation.components.AppBottomNavigation
 import com.compose.chi.presentation.navigation.AppNavHost
+import com.compose.chi.presentation.navigation.Screen
 import com.compose.chi.presentation.ui.theme.CHITheme
 
 class MainActivity : ComponentActivity(), AnalyticsLogger by AnalyticsLoggerImpl() {
@@ -35,12 +36,12 @@ class MainActivity : ComponentActivity(), AnalyticsLogger by AnalyticsLoggerImpl
                             items = listOf(
                                 BottomNavItem(
                                     name = "Random Joke",
-                                    route = "first_tab",
+                                    route = Screen.FirstTabScreen.route,
                                     icon = Icons.Default.Home
                                 ),
                                 BottomNavItem(
                                     name = "Ten Jokes",
-                                    route = "ten_jokes",
+                                    route = Screen.TenJokesScreen.route,
                                     icon = Icons.Default.List,
                                     badgeCount = 10
                                 )
