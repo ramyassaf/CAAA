@@ -5,26 +5,30 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.compose.chi.common.Resource
+import com.compose.chi.domain.model.Joke
 import com.compose.chi.domain.use_case.GetTenJokesUseCase
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 class TenJokesViewModel(
-    private val getTenJokesUseCase: GetTenJokesUseCase
+    private val getTenJokesUseCase: GetTenJokesUseCase,
 ): ViewModel() {
 
     private val _state = mutableStateOf(TenJokesState())
     val state: State<TenJokesState> = _state
 
+    private var _allJokes: List<Joke> = emptyList()
+
     init {
         getTenJokes()
     }
 
-    private fun getTenJokes() {
+    fun getTenJokes() {
         getTenJokesUseCase().onEach { result ->
             when (result) {
                 is Resource.Success -> {
-                    _state.value = TenJokesState(jokes = result.data ?: emptyList())
+                    _allJokes = (result.data ?: emptyList()) + _allJokes
+                    _state.value = TenJokesState(jokes = _allJokes)
                 }
                 is Resource.Error -> {
                     _state.value = TenJokesState(
@@ -32,7 +36,7 @@ class TenJokesViewModel(
                     )
                 }
                 is Resource.Loading -> {
-                    _state.value = TenJokesState(isLoading = true)
+                    _state.value = TenJokesState(jokes = _allJokes, isLoading = true)
                 }
             }
         }.launchIn(viewModelScope)

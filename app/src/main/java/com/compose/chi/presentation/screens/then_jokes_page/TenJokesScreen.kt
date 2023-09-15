@@ -6,7 +6,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,6 +22,7 @@ import androidx.navigation.NavController
 import com.compose.chi.presentation.navigation.Screen
 import com.compose.chi.presentation.screens.then_jokes_page.components.JokeListItem
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun TenJokesScreen(
     navController: NavController,
@@ -25,16 +30,29 @@ fun TenJokesScreen(
 ) {
     val state = viewModel.state.value
     Box(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
-            items(state.jokes) { joke ->
-                JokeListItem(
-                    joke = joke,
-                    onItemClick = {
-                        navController.navigate(Screen.Home2Screen.route)
+
+        if(state.jokes.isNotEmpty() || state.isLoading) {
+            val ptrState = rememberPullRefreshState(state.isLoading, {viewModel.getTenJokes()}) // 1
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .pullRefresh(ptrState)) { // 2
+                LazyColumn(
+                    state = rememberLazyListState(),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(state.jokes) { joke ->
+                        JokeListItem(
+                            joke = joke,
+                            onItemClick = {
+                                navController.navigate(Screen.Home2Screen.route)
+                            }
+                        )
                     }
-                )
+                }
+                PullRefreshIndicator(state.isLoading, ptrState, Modifier.align(Alignment.TopCenter)) // 3
             }
         }
+
         if(state.error.isNotBlank()) {
             Text(
                 text = state.error,
@@ -45,9 +63,6 @@ fun TenJokesScreen(
                     .padding(horizontal = 20.dp)
                     .align(Alignment.Center)
             )
-        }
-        if(state.isLoading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         }
     }
 }
