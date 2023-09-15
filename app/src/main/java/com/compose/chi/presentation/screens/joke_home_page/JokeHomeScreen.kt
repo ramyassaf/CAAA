@@ -61,7 +61,6 @@ fun JokeHomeScreen(
             )
         }
         if(state.isLoading) {
-//            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             JokeHomeScreenContent(joke = null, true,  {}, {})
         }
     }
