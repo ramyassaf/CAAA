@@ -14,12 +14,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,8 +32,10 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.compose.chi.domain.model.Joke
 import com.compose.chi.presentation.navigation.Screen
+import com.compose.chi.presentation.navigation.components.AppTopAppBar
 import com.compose.chi.presentation.ui.theme.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JokeHomeScreen(
     navController: NavController,
@@ -37,32 +43,49 @@ fun JokeHomeScreen(
 ) {
     val state = viewModel.state.value
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        state.joke?.let { joke ->
-            JokeHomeScreenContent(
-                joke = joke,
-                onClickNewJoke = {
-                    viewModel.getJoke()
-                },
-                onClick10NewJokes = {
-                    navController.navigate(Screen.SecondTabNavigationScreen.route)
-                }
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    Scaffold(
+        modifier = Modifier.fillMaxSize()
+            .nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
+            AppTopAppBar(
+                title = "Random Joke",
+                scrollBehavior = scrollBehavior,
+                hasBackButton = false,
+                onBackPressed = {},
+                onSettingsPressed = {}
             )
-        }
-        if(state.error.isNotBlank()) {
-            Text(
-                text = state.error,
-                color = MaterialTheme.colorScheme.error,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-                    .align(Alignment.Center)
-            )
-        }
-        if(state.isLoading) {
-//            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            JokeHomeScreenContent(joke = null, true,  {}, {})
+        },
+    ){ paddingValues ->
+        Box(
+            modifier = Modifier.fillMaxSize()
+                            .padding(paddingValues)
+        ) {
+            state.joke?.let { joke ->
+                JokeHomeScreenContent(
+                    joke = joke,
+                    onClickNewJoke = {
+                        viewModel.getJoke()
+                    },
+                    onClick10NewJokes = {
+                        navController.navigate(Screen.SecondTabNavigationScreen.route)
+                    }
+                )
+            }
+            if(state.error.isNotBlank()) {
+                Text(
+                    text = state.error,
+                    color = MaterialTheme.colorScheme.error,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                        .align(Alignment.Center)
+                )
+            }
+            if(state.isLoading) {
+                JokeHomeScreenContent(joke = null, true,  {}, {})
+            }
         }
     }
 }
