@@ -52,9 +52,7 @@ fun JokeHomeScreen(
                 title = "Random Joke",
                 scrollBehavior = scrollBehavior,
                 hasBackButton = false,
-                onBackPressed = {
-                    navController.popBackStack()
-                },
+                onBackPressed = {},
                 onSettingsPressed = {}
             )
         },
