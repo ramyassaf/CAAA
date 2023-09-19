@@ -13,8 +13,8 @@ import com.compose.chi.domain.use_case.GetTenJokesUseCase
 import com.compose.chi.presentation.helpers.viewModelFactory
 import com.compose.chi.presentation.screens.joke_home_page.JokeHomeScreen
 import com.compose.chi.presentation.screens.joke_home_page.JokeHomeViewModel
-import com.compose.chi.presentation.screens.then_jokes_page.TenJokesScreen
-import com.compose.chi.presentation.screens.then_jokes_page.TenJokesViewModel
+import com.compose.chi.presentation.screens.ten_jokes_page.TenJokesScreen
+import com.compose.chi.presentation.screens.ten_jokes_page.TenJokesViewModel
 
 @Composable
 fun AppNavHost(
