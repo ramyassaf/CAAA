@@ -1,4 +1,4 @@
-package com.compose.chi.presentation.screens.then_jokes_page
+package com.compose.chi.presentation.screens.ten_jokes_page
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -30,7 +30,7 @@ import androidx.navigation.NavController
 import com.compose.chi.domain.model.Joke
 import com.compose.chi.presentation.navigation.Screen
 import com.compose.chi.presentation.navigation.components.AppTopAppBar
-import com.compose.chi.presentation.screens.then_jokes_page.components.JokeListItem
+import com.compose.chi.presentation.screens.ten_jokes_page.components.JokeListItem
 import com.compose.chi.presentation.ui.theme.CHITheme
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
@@ -65,11 +65,13 @@ fun TenJokesScreen(
         ) {
             if(state.jokes.isNotEmpty() || state.isLoading) {
                 val ptrState = rememberPullRefreshState(state.isLoading, {viewModel.getTenJokes()}) // 1
-                TenJokesScreenContent(jokes = state.jokes,
+                TenJokesScreenContent(
+                    jokes = state.jokes,
                     ptrState = ptrState,
                     onClickNewJoke = {
-                    navController.navigate(Screen.Home2Screen.route)
-                })
+                        navController.navigate(Screen.JokeDetails.route)
+                    }
+                )
             }
 
             if(state.error.isNotBlank()) {
