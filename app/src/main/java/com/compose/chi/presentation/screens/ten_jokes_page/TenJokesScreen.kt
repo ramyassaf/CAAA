@@ -65,11 +65,13 @@ fun TenJokesScreen(
         ) {
             if(state.jokes.isNotEmpty() || state.isLoading) {
                 val ptrState = rememberPullRefreshState(state.isLoading, {viewModel.getTenJokes()}) // 1
-                TenJokesScreenContent(jokes = state.jokes,
+                TenJokesScreenContent(
+                    jokes = state.jokes,
                     ptrState = ptrState,
                     onClickNewJoke = {
-                    navController.navigate(Screen.Home2Screen.route)
-                })
+                        navController.navigate(Screen.JokeDetails.route)
+                    }
+                )
             }
 
             if(state.error.isNotBlank()) {
