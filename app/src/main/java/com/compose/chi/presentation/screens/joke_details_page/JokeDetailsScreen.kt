@@ -50,7 +50,7 @@ fun JokeDetailsScreen(
             .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             AppTopAppBar(
-                title = if (state.joke != null) state.joke?.punchline.toString() else "",
+                title = if (state.joke != null) state.joke.punchline.toString() else "",
                 scrollBehavior = scrollBehavior,
                 hasBackButton = true,
                 onBackPressed = {
