@@ -1,7 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'com.google.devtools.ksp'
+    id 'kotlin-kapt'
 }
 
 android {
@@ -66,6 +66,13 @@ dependencies {
     debugImplementation 'androidx.compose.ui:ui-tooling'
     debugImplementation 'androidx.compose.ui:ui-test-manifest'
 
+    // Unit Testing
+//    testImplementation 'androidx.text:core:1.4.0'
+//    testImplementation 'androidx.arch.core:core-testing:2.2.0'
+//    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.1'
+//    testImplementation 'com.google.truth:truth:1.1.3'
+//    debugImplementation 'androidx.compose.ui:ui-test-manifest:1.5.1'
+
     // Compose dependencies
     implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2'
     implementation "androidx.navigation:navigation-compose:2.7.3"
@@ -78,7 +85,14 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:5.0.0-alpha.2'
     implementation 'com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.2'
 
+    // Coroutines
+//    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1'
+//    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1'
+
+    // Coroutine Lifecycle Scopes
+//    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2"
+
     // Room
-    implementation "androidx.room:room-ktx:2.5.2"
-    ksp 'androidx.room:room-compiler:2.5.2'
+    implementation "androidx.room:room-ktx:2.5.0"
+    kapt 'androidx.room:room-compiler:2.5.0'
 }

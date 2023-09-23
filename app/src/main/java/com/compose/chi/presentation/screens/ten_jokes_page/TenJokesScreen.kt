@@ -125,7 +125,7 @@ fun TenJokesScreen() {
     CHITheme {
         val jokes = mutableListOf<Joke>()
         for (i in 1..50) {
-            val joke = Joke(punchline = "punchline $i", setup = "setup $i")
+            val joke = Joke(punchline = "punchline $i", setup = "setup $i", type = "default", id = i)
             jokes.add(joke)
         }
         val ptrState = rememberPullRefreshState(false, {}) // 1

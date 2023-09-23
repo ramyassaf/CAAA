@@ -151,7 +151,7 @@ private fun JokeDetailsScreenContent(
 @Composable
 fun JokeDetailsScreen() {
     CHITheme {
-        val joke = Joke(punchline = "punchline", setup = "setup")
+        val joke = Joke(punchline = "punchline", setup = "setup", type = "default", id = 1)
         JokeDetailsScreenContent(joke = joke, false,  {})
     }
 }

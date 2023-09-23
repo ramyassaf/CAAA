@@ -5,12 +5,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.compose.chi.common.Resource
+import com.compose.chi.data.db.JokeDao
+import com.compose.chi.domain.model.toJokeEntity
 import com.compose.chi.domain.use_case.GetJokeUseCase
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 class JokeHomeViewModel(
-    private val getJokeUseCase: GetJokeUseCase
+    private val getJokeUseCase: GetJokeUseCase,
+    private val dao: JokeDao
 ): ViewModel() {
 
     private val _state = mutableStateOf(JokeHomeState())
@@ -25,6 +28,9 @@ class JokeHomeViewModel(
             when (result) {
                 is Resource.Success -> {
                     _state.value = JokeHomeState(joke = result.data)
+                    result.data?.let {
+                        dao.addJoke(it.toJokeEntity())
+                    }
                 }
                 is Resource.Error -> {
                     _state.value = JokeHomeState(

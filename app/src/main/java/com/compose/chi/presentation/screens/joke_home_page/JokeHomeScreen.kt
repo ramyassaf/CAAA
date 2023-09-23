@@ -160,7 +160,7 @@ private fun JokeHomeScreenContent(
 @Composable
 fun JokeHomeScreen() {
     CHITheme {
-        val joke = Joke(punchline = "punchline", setup = "setup")
+        val joke = Joke(punchline = "punchline", setup = "setup", type = "default", id = 1)
         JokeHomeScreenContent(joke = joke, false,  {}, {})
     }
 }
