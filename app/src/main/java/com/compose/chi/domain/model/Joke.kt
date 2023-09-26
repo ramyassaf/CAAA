@@ -6,7 +6,8 @@ data class Joke(
     val id: Int,
     val punchline: String,
     val setup: String,
-    val type: String
+    val type: String,
+    var isFavourite: Boolean = false
 )
 
 fun Joke.toJokeEntity(): JokeEntity {
@@ -14,6 +15,7 @@ fun Joke.toJokeEntity(): JokeEntity {
         punchline = punchline,
         setup = setup,
         type = type,
+        isFavourite = isFavourite,
         id = id
     )
 }

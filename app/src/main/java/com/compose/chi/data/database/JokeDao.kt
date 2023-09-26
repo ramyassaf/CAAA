@@ -11,14 +11,17 @@ import kotlinx.coroutines.flow.Flow
 interface JokeDao {
 
     @Upsert()
-    suspend fun addJoke(joke: JokeEntity)
+    suspend fun upsertJoke(joke: JokeEntity)
 
     @Delete
     suspend fun deleteJoke(joke: JokeEntity)
 
-    @Query("SELECT * from jokes")
+    @Query("SELECT * FROM jokes")
     fun getAllJokes(): Flow<List<JokeEntity>>
 
-    @Query("DELETE from jokes")
+    @Query("SELECT * FROM jokes WHERE isFavourite")
+    fun getAllLikedJokes(): Flow<List<JokeEntity>>
+
+    @Query("DELETE FROM jokes")
     fun deleteAllJokes()
 }

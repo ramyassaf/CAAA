@@ -12,6 +12,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -45,7 +50,8 @@ fun JokeHomeScreen(
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             AppTopAppBar(
@@ -58,14 +64,18 @@ fun JokeHomeScreen(
         },
     ){ paddingValues ->
         Box(
-            modifier = Modifier.fillMaxSize()
-                            .padding(paddingValues)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
         ) {
             state.joke?.let { joke ->
                 JokeHomeScreenContent(
                     joke = joke,
                     onClickNewJoke = {
                         viewModel.getJoke()
+                    },
+                    onLikeJoke = {
+                        viewModel.toggleLikeJoke(joke)
                     },
                     onClick10NewJokes = {
                         navController.navigate(Screen.SecondTabNavigationScreen.route)
@@ -84,7 +94,7 @@ fun JokeHomeScreen(
                 )
             }
             if(state.isLoading) {
-                JokeHomeScreenContent(joke = null, true,  {}, {})
+                JokeHomeScreenContent(joke = null, true,  {}, {}, {})
             }
         }
     }
@@ -95,10 +105,12 @@ private fun JokeHomeScreenContent(
     joke: Joke?,
     isLoading: Boolean = false,
     onClickNewJoke: () -> Unit,
+    onLikeJoke: () -> Unit,
     onClick10NewJokes: () -> Unit
 ) {
     LazyColumn(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .background(Color.White),
         contentPadding = PaddingValues(content_padding)
     ) {
@@ -133,6 +145,16 @@ private fun JokeHomeScreenContent(
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
+                IconButton(
+                    onClick = onLikeJoke,
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Icon(
+                        imageVector = if(joke?.isFavourite == true)  Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                        contentDescription = "Favourite"
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = onClickNewJoke,
                     shape = ShapesRoundedCorner.large,
@@ -142,6 +164,7 @@ private fun JokeHomeScreenContent(
                         text = "Get New Joke"
                     )
                 }
+                Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = onClick10NewJokes,
                     shape = ShapesRoundedCorner.large,
@@ -161,6 +184,6 @@ private fun JokeHomeScreenContent(
 fun JokeHomeScreen() {
     CHITheme {
         val joke = Joke(punchline = "punchline", setup = "setup", type = "default", id = 1)
-        JokeHomeScreenContent(joke = joke, false,  {}, {})
+        JokeHomeScreenContent(joke = joke, false,  {}, {}, {})
     }
 }

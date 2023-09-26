@@ -16,12 +16,12 @@ class MyFavouriteJokesViewModel(
     private val jokeDao: JokeDao
 ): ViewModel() {
 
-    private val _allJokes = jokeDao.getAllJokes()
+    private val _allLikedJokes = jokeDao.getAllLikedJokes()
 
     private val _state = MutableStateFlow(MyFavouriteJokesState())
-    val state = combine(_state, _allJokes) { state, allJokes ->
+    val state = combine(_state, _allLikedJokes) { state, allLikedJokes ->
         state.copy(
-            jokes = allJokes.map { it.toJoke() },
+            jokes = allLikedJokes.map { it.toJoke() },
             isLoading = false
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), MyFavouriteJokesState())
