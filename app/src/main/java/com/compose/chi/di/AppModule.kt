@@ -3,7 +3,7 @@ package com.compose.chi.di
 import android.content.Context
 import androidx.room.Room
 import com.compose.chi.common.Constants.BASE_URL_JOKES
-import com.compose.chi.data.db.AppDatabase
+import com.compose.chi.data.database.AppDatabase
 import com.compose.chi.data.remote.JokeApi
 import com.compose.chi.data.repository.JokeRepositoryImpl
 import com.compose.chi.domain.repository.JokeRepository

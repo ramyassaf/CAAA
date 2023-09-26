@@ -1,8 +1,7 @@
-package com.compose.chi.data.db
+package com.compose.chi.data.database.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.compose.chi.data.remote.dto.JokeDto
 import com.compose.chi.domain.model.Joke
 
 @Entity(tableName = "jokes")

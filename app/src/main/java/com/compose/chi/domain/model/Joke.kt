@@ -1,6 +1,6 @@
 package com.compose.chi.domain.model
 
-import com.compose.chi.data.db.JokeEntity
+import com.compose.chi.data.database.model.JokeEntity
 
 data class Joke(
     val id: Int,

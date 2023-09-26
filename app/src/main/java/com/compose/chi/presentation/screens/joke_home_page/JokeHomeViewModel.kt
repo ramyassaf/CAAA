@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.compose.chi.common.Resource
-import com.compose.chi.data.db.JokeDao
+import com.compose.chi.data.database.JokeDao
 import com.compose.chi.domain.model.toJokeEntity
 import com.compose.chi.domain.use_case.GetJokeUseCase
 import kotlinx.coroutines.flow.launchIn

@@ -10,14 +10,21 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
+import com.compose.chi.ChiApplication
 import com.compose.chi.analytics.AnalyticsLogger
 import com.compose.chi.analytics.AnalyticsLoggerImpl
+import com.compose.chi.data.database.JokeDao
+import com.compose.chi.presentation.helpers.viewModelFactory
 import com.compose.chi.presentation.navigation.components.BottomNavItem
 import com.compose.chi.presentation.navigation.components.AppBottomNavigation
 import com.compose.chi.presentation.navigation.AppNavHost
 import com.compose.chi.presentation.navigation.Screen
+import com.compose.chi.presentation.screens.my_favourite_jokes_page.MyFavouriteJokesViewModel
 import com.compose.chi.presentation.ui.theme.CHITheme
 
 class MainActivity : ComponentActivity(), AnalyticsLogger by AnalyticsLoggerImpl() {
@@ -31,6 +38,16 @@ class MainActivity : ComponentActivity(), AnalyticsLogger by AnalyticsLoggerImpl
         setContent {
             CHITheme {
                 val navController = rememberNavController()
+
+                val myFavouriteJokesViewModel = viewModel<MyFavouriteJokesViewModel>(
+                    factory = viewModelFactory {
+                        val jokeDao: JokeDao = ChiApplication.appModule.db.dao
+                        MyFavouriteJokesViewModel(jokeDao)
+                    }
+                )
+
+                val myFavState by myFavouriteJokesViewModel.state.collectAsState()
+
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     bottomBar = {
@@ -46,6 +63,12 @@ class MainActivity : ComponentActivity(), AnalyticsLogger by AnalyticsLoggerImpl
                                     route = Screen.TenJokesScreen.route,
                                     icon = Icons.Default.List,
                                     badgeCount = 10
+                                ),
+                                BottomNavItem(
+                                    name = "My Favourite💚Jokes",
+                                    route = Screen.MyFavouriteJokesScreen.route,
+                                    icon = Icons.Default.List,
+                                    badgeCount = myFavState.jokes.count()
                                 )
                             ),
                             navController = navController,

@@ -8,7 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.compose.chi.ChiApplication
-import com.compose.chi.data.db.JokeDao
+import com.compose.chi.data.database.JokeDao
 import com.compose.chi.domain.use_case.GetJokeUseCase
 import com.compose.chi.domain.use_case.GetTenJokesUseCase
 import com.compose.chi.presentation.helpers.viewModelFactory
@@ -16,6 +16,8 @@ import com.compose.chi.presentation.screens.joke_details_page.JokeDetailsScreen
 import com.compose.chi.presentation.screens.joke_details_page.JokeDetailsViewModel
 import com.compose.chi.presentation.screens.joke_home_page.JokeHomeScreen
 import com.compose.chi.presentation.screens.joke_home_page.JokeHomeViewModel
+import com.compose.chi.presentation.screens.my_favourite_jokes_page.MyFavouriteJokesScreen
+import com.compose.chi.presentation.screens.my_favourite_jokes_page.MyFavouriteJokesViewModel
 import com.compose.chi.presentation.screens.ten_jokes_page.TenJokesScreen
 import com.compose.chi.presentation.screens.ten_jokes_page.TenJokesViewModel
 
@@ -82,6 +84,22 @@ fun AppNavHost(
                     viewModel = jokeDetailsViewModel
                 )
             }
+        }
+
+        // Screen without a navigation
+        composable(
+            route = Screen.MyFavouriteJokesScreen.route
+        ) {
+            val myFavouriteJokesViewModel = viewModel<MyFavouriteJokesViewModel>(
+                factory = viewModelFactory {
+                    val jokeDao: JokeDao = ChiApplication.appModule.db.dao
+                    MyFavouriteJokesViewModel(jokeDao)
+                }
+            )
+            MyFavouriteJokesScreen(
+                navController = navController,
+                viewModel = myFavouriteJokesViewModel
+            )
         }
     }
 }

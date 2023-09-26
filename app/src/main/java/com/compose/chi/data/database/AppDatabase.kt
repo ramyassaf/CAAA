@@ -1,7 +1,8 @@
-package com.compose.chi.data.db
+package com.compose.chi.data.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import com.compose.chi.data.database.model.JokeEntity
 
 @Database(
     entities = [JokeEntity::class],
