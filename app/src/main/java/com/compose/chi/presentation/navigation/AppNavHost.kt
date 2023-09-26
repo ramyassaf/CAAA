@@ -2,23 +2,22 @@ package com.compose.chi.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import com.compose.chi.ChiApplication
+import com.compose.chi.data.database.JokeDao
 import com.compose.chi.domain.use_case.GetJokeUseCase
 import com.compose.chi.domain.use_case.GetTenJokesUseCase
 import com.compose.chi.presentation.helpers.viewModelFactory
 import com.compose.chi.presentation.screens.joke_details_page.JokeDetailsScreen
 import com.compose.chi.presentation.screens.joke_details_page.JokeDetailsViewModel
 import com.compose.chi.presentation.screens.joke_home_page.JokeHomeScreen
-import com.compose.chi.presentation.screens.joke_home_page.JokeHomeState
 import com.compose.chi.presentation.screens.joke_home_page.JokeHomeViewModel
+import com.compose.chi.presentation.screens.my_favourite_jokes_page.MyFavouriteJokesScreen
+import com.compose.chi.presentation.screens.my_favourite_jokes_page.MyFavouriteJokesViewModel
 import com.compose.chi.presentation.screens.ten_jokes_page.TenJokesScreen
 import com.compose.chi.presentation.screens.ten_jokes_page.TenJokesViewModel
 
@@ -41,7 +40,8 @@ fun AppNavHost(
             val homeViewModel = viewModel<JokeHomeViewModel>(
                 factory = viewModelFactory {
                     val getJokeUseCase: GetJokeUseCase = GetJokeUseCase(ChiApplication.appModule.jokeRepository)
-                    JokeHomeViewModel(getJokeUseCase)
+                    val jokeDao: JokeDao = ChiApplication.appModule.db.dao
+                    JokeHomeViewModel(getJokeUseCase, jokeDao)
                 }
             )
             JokeHomeScreen(
@@ -79,12 +79,27 @@ fun AppNavHost(
                         JokeDetailsViewModel(getJokeUseCase)
                     }
                 )
-//                val jokeDetailsViewModel: JokeDetailsViewModel by viewModels()
                 JokeDetailsScreen(
                     navController = navController,
                     viewModel = jokeDetailsViewModel
                 )
             }
+        }
+
+        // Screen without a navigation
+        composable(
+            route = Screen.MyFavouriteJokesScreen.route
+        ) {
+            val myFavouriteJokesViewModel = viewModel<MyFavouriteJokesViewModel>(
+                factory = viewModelFactory {
+                    val jokeDao: JokeDao = ChiApplication.appModule.db.dao
+                    MyFavouriteJokesViewModel(jokeDao)
+                }
+            )
+            MyFavouriteJokesScreen(
+                navController = navController,
+                viewModel = myFavouriteJokesViewModel
+            )
         }
     }
 }

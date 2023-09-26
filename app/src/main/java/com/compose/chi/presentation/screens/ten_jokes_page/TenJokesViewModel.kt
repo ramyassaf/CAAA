@@ -32,7 +32,7 @@ class TenJokesViewModel(
                 }
                 is Resource.Error -> {
                     _state.value = TenJokesState(
-                        error = result.message ?: "An unexpected error occured"
+                        error = result.message ?: "An unexpected error occurred"
                     )
                 }
                 is Resource.Loading -> {
