@@ -8,13 +8,18 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.compose.chi.ChiApplication
+import com.compose.chi.data.database.JokeDao
 import com.compose.chi.domain.use_case.GetJokeUseCase
 import com.compose.chi.domain.use_case.GetTenJokesUseCase
 import com.compose.chi.presentation.helpers.viewModelFactory
+import com.compose.chi.presentation.screens.joke_details_page.JokeDetailsScreen
+import com.compose.chi.presentation.screens.joke_details_page.JokeDetailsViewModel
 import com.compose.chi.presentation.screens.joke_home_page.JokeHomeScreen
 import com.compose.chi.presentation.screens.joke_home_page.JokeHomeViewModel
-import com.compose.chi.presentation.screens.then_jokes_page.TenJokesScreen
-import com.compose.chi.presentation.screens.then_jokes_page.TenJokesViewModel
+import com.compose.chi.presentation.screens.my_favourite_jokes_page.MyFavouriteJokesScreen
+import com.compose.chi.presentation.screens.my_favourite_jokes_page.MyFavouriteJokesViewModel
+import com.compose.chi.presentation.screens.ten_jokes_page.TenJokesScreen
+import com.compose.chi.presentation.screens.ten_jokes_page.TenJokesViewModel
 
 @Composable
 fun AppNavHost(
@@ -29,11 +34,14 @@ fun AppNavHost(
     ) {
 
         // Screen without a navigation
-        composable(Screen.FirstTabScreen.route) {
+        composable(
+            route = Screen.FirstTabScreen.route
+        ) {
             val homeViewModel = viewModel<JokeHomeViewModel>(
                 factory = viewModelFactory {
                     val getJokeUseCase: GetJokeUseCase = GetJokeUseCase(ChiApplication.appModule.jokeRepository)
-                    JokeHomeViewModel(getJokeUseCase)
+                    val jokeDao: JokeDao = ChiApplication.appModule.db.dao
+                    JokeHomeViewModel(getJokeUseCase, jokeDao)
                 }
             )
             JokeHomeScreen(
@@ -47,7 +55,10 @@ fun AppNavHost(
             startDestination = Screen.TenJokesScreen.route,
             route = Screen.SecondTabNavigationScreen.route
         ) {
-            composable(Screen.TenJokesScreen.route) {
+
+            composable(
+                route = Screen.TenJokesScreen.route
+            ) {
                 val tenJokesViewModel = viewModel<TenJokesViewModel>(
                     factory = viewModelFactory {
                         val getTenJokesUseCase: GetTenJokesUseCase = GetTenJokesUseCase(ChiApplication.appModule.jokeRepository)
@@ -59,18 +70,36 @@ fun AppNavHost(
                     viewModel = tenJokesViewModel
                 )
             }
-            composable(Screen.Home2Screen.route) {
-                val homeViewModel = viewModel<JokeHomeViewModel>(
+            composable(
+                route = Screen.JokeDetails.route
+            ) {
+                val jokeDetailsViewModel = viewModel<JokeDetailsViewModel>(
                     factory = viewModelFactory {
                         val getJokeUseCase: GetJokeUseCase = GetJokeUseCase(ChiApplication.appModule.jokeRepository)
-                        JokeHomeViewModel(getJokeUseCase)
+                        JokeDetailsViewModel(getJokeUseCase)
                     }
                 )
-                JokeHomeScreen(
+                JokeDetailsScreen(
                     navController = navController,
-                    viewModel = homeViewModel
+                    viewModel = jokeDetailsViewModel
                 )
             }
+        }
+
+        // Screen without a navigation
+        composable(
+            route = Screen.MyFavouriteJokesScreen.route
+        ) {
+            val myFavouriteJokesViewModel = viewModel<MyFavouriteJokesViewModel>(
+                factory = viewModelFactory {
+                    val jokeDao: JokeDao = ChiApplication.appModule.db.dao
+                    MyFavouriteJokesViewModel(jokeDao)
+                }
+            )
+            MyFavouriteJokesScreen(
+                navController = navController,
+                viewModel = myFavouriteJokesViewModel
+            )
         }
     }
 }

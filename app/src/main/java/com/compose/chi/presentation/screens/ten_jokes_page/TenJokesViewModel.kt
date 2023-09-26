@@ -1,4 +1,4 @@
-package com.compose.chi.presentation.screens.then_jokes_page
+package com.compose.chi.presentation.screens.ten_jokes_page
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -32,7 +32,7 @@ class TenJokesViewModel(
                 }
                 is Resource.Error -> {
                     _state.value = TenJokesState(
-                        error = result.message ?: "An unexpected error occured"
+                        error = result.message ?: "An unexpected error occurred"
                     )
                 }
                 is Resource.Loading -> {

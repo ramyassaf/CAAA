@@ -1,21 +1,19 @@
-package com.compose.chi.presentation.screens.joke_home_page
+package com.compose.chi.presentation.screens.joke_details_page
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.compose.chi.common.Resource
-import com.compose.chi.data.database.JokeDao
 import com.compose.chi.domain.model.Joke
-import com.compose.chi.domain.model.toJokeEntity
 import com.compose.chi.domain.use_case.GetJokeUseCase
+import com.compose.chi.presentation.screens.joke_home_page.JokeHomeState
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 
-class JokeHomeViewModel(
-    private val getJokeUseCase: GetJokeUseCase,
-    private val dao: JokeDao
+class JokeDetailsViewModel(
+    private val getJokeUseCase: GetJokeUseCase
 ): ViewModel() {
 
     private val _state = mutableStateOf(JokeHomeState())
@@ -41,16 +39,5 @@ class JokeHomeViewModel(
                 }
             }
         }.launchIn(viewModelScope)
-    }
-
-    fun toggleLikeJoke(joke: Joke) {
-        val isFavBeforeClick = joke.isFavourite
-        val jokeCopyFav = joke.copy(isFavourite = !isFavBeforeClick)
-        
-        viewModelScope.launch {
-            _state.value = JokeHomeState(joke = jokeCopyFav)
-
-            dao.upsertJoke(jokeCopyFav.toJokeEntity())
-        }
     }
 }
