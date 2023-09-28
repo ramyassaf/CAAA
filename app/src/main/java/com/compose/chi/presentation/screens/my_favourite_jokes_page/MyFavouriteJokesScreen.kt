@@ -108,7 +108,6 @@ fun MyFavouriteJokesScreen(
 @Composable
 private fun MyFavouriteJokesScreenContent(
     jokes: List<Joke>,
-    isLoading: Boolean = false,
     onJokeItemClick: () -> Unit
 ) {
     Box(modifier = Modifier
@@ -141,6 +140,6 @@ fun MyFavouriteJokesScreen() {
             jokes.add(joke)
         }
         val ptrState = rememberPullRefreshState(false, {}) // 1
-        MyFavouriteJokesScreenContent(jokes = jokes, false, {})
+        MyFavouriteJokesScreenContent(jokes = jokes, {})
     }
 }
