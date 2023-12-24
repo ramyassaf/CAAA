@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -35,7 +34,6 @@ import androidx.navigation.NavController
 import com.compose.chi.domain.model.Joke
 import com.compose.chi.presentation.navigation.components.AppTopAppBar
 import com.compose.chi.presentation.ui.theme.CHITheme
-import com.compose.chi.presentation.ui.theme.ShapesRoundedCorner
 import com.compose.chi.presentation.ui.theme.content_padding
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,10 +66,7 @@ fun JokeDetailsScreen(
         ) {
             state.joke?.let { joke ->
                 JokeDetailsScreenContent(
-                    joke = joke,
-                    onClickNewJoke = {
-                        viewModel.getJoke()
-                    }
+                    joke = joke
                 )
             }
             if(state.error.isNotBlank()) {
@@ -86,7 +81,7 @@ fun JokeDetailsScreen(
                 )
             }
             if(state.isLoading) {
-                JokeDetailsScreenContent(joke = null, true,  {})
+                JokeDetailsScreenContent(joke = null, true)
             }
         }
     }
@@ -97,7 +92,6 @@ fun JokeDetailsScreen(
 private fun JokeDetailsScreenContent(
     joke: Joke?,
     isLoading: Boolean = false,
-    onClickNewJoke: () -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize()
@@ -134,16 +128,6 @@ private fun JokeDetailsScreenContent(
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = onClickNewJoke,
-                    shape = ShapesRoundedCorner.large,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = "Get New Joke"
-                    )
-                }
             }
         }
     }
@@ -154,6 +138,6 @@ private fun JokeDetailsScreenContent(
 fun JokeDetailsScreen() {
     CHITheme {
         val joke = Joke(punchline = "punchline", setup = "setup", type = "default", id = 1)
-        JokeDetailsScreenContent(joke = joke, false,  {})
+        JokeDetailsScreenContent(joke = joke, false)
     }
 }
