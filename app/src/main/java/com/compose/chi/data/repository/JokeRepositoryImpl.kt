@@ -15,4 +15,7 @@ class JokeRepositoryImpl(
         return api.getTenJokes()
     }
 
+    override suspend fun getJokeById(jokeId: Int): JokeDto {
+        return api.getJokeById(jokeId)
+    }
 }

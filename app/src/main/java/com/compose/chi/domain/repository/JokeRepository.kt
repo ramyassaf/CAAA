@@ -8,4 +8,6 @@ interface JokeRepository {
     suspend fun getJoke(): JokeDto
 
     suspend fun getTenJokes(): List<JokeDto>
+
+    suspend fun getJokeById(jokeId: Int): JokeDto
 }
