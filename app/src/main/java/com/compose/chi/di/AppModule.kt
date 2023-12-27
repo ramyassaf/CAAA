@@ -7,8 +7,11 @@ import com.compose.chi.data.database.AppDatabase
 import com.compose.chi.data.remote.JokeApi
 import com.compose.chi.data.repository.JokeRepositoryImpl
 import com.compose.chi.domain.repository.JokeRepository
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+
 
 // ** Manual Dependency injection
 interface AppModule {
@@ -22,9 +25,18 @@ class AppModuleImpl(
 ): AppModule {
 
     override val jokeApi: JokeApi by lazy {
+
+        // Logging interceptor
+        val logging = HttpLoggingInterceptor()
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY)
+        val httpClient = OkHttpClient.Builder()
+            .addInterceptor(logging)
+            .build()
+
         Retrofit.Builder()
             .baseUrl(BASE_URL_JOKES)
             .addConverterFactory(GsonConverterFactory.create())
+            .client(httpClient)
             .build()
             .create(JokeApi::class.java)
     }
