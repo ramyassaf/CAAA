@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.compose.chi.common.Resource
 import com.compose.chi.data.database.JokeDao
+import com.compose.chi.data.database.model.toJokeEntity
 import com.compose.chi.domain.model.Joke
-import com.compose.chi.domain.model.toJokeEntity
 import com.compose.chi.domain.use_case.GetJokeUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

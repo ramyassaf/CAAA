@@ -82,8 +82,9 @@ fun MyFavouriteJokesScreen(
             if(state.jokes.isNotEmpty() || state.isLoading) {
                 MyFavouriteJokesScreenContent(
                     jokes = state.jokes,
-                    onJokeItemClick = {
-                        navController.navigate(Screen.JokeDetails.route)
+                    onSelectItem = {
+//                        navController.navigate(Screen.JokeDetails.route)
+                        navController.navigate(Screen.JokeDetails.route + "/${it}")
                     }
                 )
             }
@@ -108,7 +109,7 @@ fun MyFavouriteJokesScreen(
 @Composable
 private fun MyFavouriteJokesScreenContent(
     jokes: List<Joke>,
-    onJokeItemClick: () -> Unit
+    onSelectItem: (jokeId: Int) -> Unit
 ) {
     Box(modifier = Modifier
         .fillMaxSize()
@@ -121,7 +122,7 @@ private fun MyFavouriteJokesScreenContent(
                 JokeListItem(
                     joke = joke,
                     onItemClick = {
-                        onJokeItemClick()
+                        onSelectItem(it.id)
                     }
                 )
             }

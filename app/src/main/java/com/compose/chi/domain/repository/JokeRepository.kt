@@ -1,13 +1,12 @@
 package com.compose.chi.domain.repository
 
-import com.compose.chi.data.remote.dto.JokeDto
-
+import com.compose.chi.domain.model.Joke
 // **
 interface JokeRepository {
 
-    suspend fun getJoke(): JokeDto
+    suspend fun getJoke(): Joke
 
-    suspend fun getTenJokes(): List<JokeDto>
+    suspend fun getTenJokes(): List<Joke>
 
-    suspend fun getJokeById(jokeId: Int): JokeDto
+    suspend fun getJokeById(jokeId: String): Joke
 }

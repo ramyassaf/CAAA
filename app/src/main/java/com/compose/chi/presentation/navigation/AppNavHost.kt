@@ -80,6 +80,7 @@ fun AppNavHost(
                         val getJokeByIdUseCase: GetJokeByIdUseCase = GetJokeByIdUseCase(ChiApplication.appModule.jokeRepository)
                         val jokeDao: JokeDao = ChiApplication.appModule.db.dao
                         val jokeId = it.arguments?.getString("jokeId") ?: ""
+//                        JokeDetailsViewModel(getJokeByIdUseCase, jokeDao, jokeId)
                         JokeDetailsViewModel(getJokeByIdUseCase, jokeDao, SavedStateHandle(), jokeId)
                     }
                 )

@@ -1,7 +1,6 @@
 package com.compose.chi.domain.use_case
 
 import com.compose.chi.common.Resource
-import com.compose.chi.data.remote.dto.toJoke
 import com.compose.chi.domain.model.Joke
 import com.compose.chi.domain.repository.JokeRepository
 import kotlinx.coroutines.flow.Flow
@@ -15,7 +14,7 @@ class GetJokeUseCase(
     operator fun invoke(): Flow<Resource<Joke>> = flow {
         try {
             emit(Resource.Loading<Joke>())
-            val joke = repository.getJoke().toJoke()
+            val joke = repository.getJoke()
             emit(Resource.Success<Joke>(joke))
         } catch(e: HttpException) {
             emit(Resource.Error<Joke>(e.localizedMessage ?: "An unexpected error occurred"))

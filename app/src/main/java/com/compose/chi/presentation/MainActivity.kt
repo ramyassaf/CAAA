@@ -60,9 +60,8 @@ class MainActivity : ComponentActivity(), AnalyticsLogger by AnalyticsLoggerImpl
                                 ),
                                 BottomNavItem(
                                     name = "Ten Jokes",
-                                    route = Screen.TenJokesScreen.route,
-                                    icon = Icons.Default.List,
-                                    badgeCount = 10
+                                    route = Screen.SecondTabNavigationScreen.route,
+                                    icon = Icons.Default.List
                                 ),
                                 BottomNavItem(
                                     name = "My Favourite💚Jokes",
@@ -73,6 +72,7 @@ class MainActivity : ComponentActivity(), AnalyticsLogger by AnalyticsLoggerImpl
                             ),
                             navController = navController,
                             onItemClick = {
+                                println("it.route = ${it.route}")
                                 navController.navigate(it.route)
                             }
                         )

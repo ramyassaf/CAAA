@@ -12,6 +12,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -50,7 +55,7 @@ fun JokeDetailsScreen(
             .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             AppTopAppBar(
-                title = if (state.joke != null) state.joke!!.punchline else "",
+                title = if (state.joke != null) state.joke!!.punchline else "Loading Joke...",
                 scrollBehavior = scrollBehavior,
                 hasBackButton = true,
                 onBackPressed = {
@@ -66,7 +71,10 @@ fun JokeDetailsScreen(
         ) {
             state.joke?.let { joke ->
                 JokeDetailsScreenContent(
-                    joke = joke
+                    joke = joke,
+                    onLikeJoke = {
+                        viewModel.toggleLikeJoke(joke)
+                    },
                 )
             }
             if(state.error.isNotBlank()) {
@@ -81,7 +89,7 @@ fun JokeDetailsScreen(
                 )
             }
             if(state.isLoading) {
-                JokeDetailsScreenContent(joke = null, true)
+                JokeDetailsScreenContent(joke = null, true, {})
             }
         }
     }
@@ -92,6 +100,7 @@ fun JokeDetailsScreen(
 private fun JokeDetailsScreenContent(
     joke: Joke?,
     isLoading: Boolean = false,
+    onLikeJoke: () -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize()
@@ -107,7 +116,7 @@ private fun JokeDetailsScreenContent(
                 fontWeight = FontWeight.Bold
             )
             Column(
-                modifier = Modifier.fillMaxHeight(),
+                modifier = Modifier.fillMaxHeight().fillMaxWidth(),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
@@ -128,6 +137,16 @@ private fun JokeDetailsScreenContent(
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
+                Spacer(modifier = Modifier.height(16.dp))
+                IconButton(
+                    onClick = onLikeJoke,
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Icon(
+                        imageVector = if(joke?.isFavourite == true)  Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                        contentDescription = "Favourite"
+                    )
+                }
             }
         }
     }
@@ -138,6 +157,6 @@ private fun JokeDetailsScreenContent(
 fun JokeDetailsScreen() {
     CHITheme {
         val joke = Joke(punchline = "punchline", setup = "setup", type = "default", id = 1)
-        JokeDetailsScreenContent(joke = joke, false)
+        JokeDetailsScreenContent(joke = joke, false, {})
     }
 }

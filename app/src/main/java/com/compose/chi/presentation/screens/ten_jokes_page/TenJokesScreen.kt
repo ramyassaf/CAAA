@@ -70,7 +70,8 @@ fun TenJokesScreen(
                 TenJokesScreenContent(
                     jokes = state.jokes,
                     ptrState = ptrState,
-                    onClickNewJoke = {
+                    onSelectItem = {
+                        println("onSelectItem it = ${it.toString()}")
                         navController.navigate(Screen.JokeDetails.route + "/${it}")
                     }
                 )
@@ -97,7 +98,7 @@ private fun TenJokesScreenContent(
     jokes: List<Joke>,
     isLoading: Boolean = false,
     ptrState: PullRefreshState,
-    onClickNewJoke: (jokeId: Int) -> Unit
+    onSelectItem: (jokeId: Int) -> Unit
 ) {
     Box(modifier = Modifier
         .fillMaxSize()
@@ -111,7 +112,7 @@ private fun TenJokesScreenContent(
                 JokeListItem(
                     joke = joke,
                     onItemClick = {
-                        onClickNewJoke(joke.id)
+                        onSelectItem(joke.id)
                     }
                 )
             }

@@ -13,5 +13,5 @@ interface JokeApi {
     suspend fun getTenJokes(): List<JokeDto>
 
     @GET("/jokes/{jokeId}")
-    suspend fun getJokeById(@Path("jokeId") jokeId: Int): JokeDto
+    suspend fun getJokeById(@Path("jokeId") jokeId: String): JokeDto
 }
