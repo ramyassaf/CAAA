@@ -8,8 +8,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -56,17 +58,17 @@ class MainActivity : ComponentActivity(), AnalyticsLogger by AnalyticsLoggerImpl
                                 BottomNavItem(
                                     name = "Random Joke",
                                     route = Screen.FirstTabScreen.route,
-                                    icon = Icons.Default.Home
+                                    icon = Icons.Default.ThumbUp
                                 ),
                                 BottomNavItem(
                                     name = "Ten Jokes",
-                                    route = Screen.SecondTabNavigationScreen.route,
+                                    route = Screen.TenJokesScreen.route,
                                     icon = Icons.Default.List
                                 ),
                                 BottomNavItem(
                                     name = "My Favourite💚Jokes",
                                     route = Screen.MyFavouriteJokesScreen.route,
-                                    icon = Icons.Default.List,
+                                    icon = Icons.Default.Favorite,
                                     badgeCount = myFavState.jokes.count()
                                 )
                             ),

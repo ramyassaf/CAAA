@@ -50,7 +50,7 @@ fun TenJokesScreen(
             .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             AppTopAppBar(
-                title = "Random 10 Jokes",
+                title = "Random ${state.jokes.count()} Jokes",
                 scrollBehavior = scrollBehavior,
                 hasBackButton = false,
                 onBackPressed = {
