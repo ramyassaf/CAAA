@@ -7,13 +7,13 @@ data class JokeDto(
     val punchline: String,
     val setup: String,
     val type: String
-)
-
-fun JokeDto.toJoke(): Joke {
-    return Joke (
-        punchline = punchline,
-        setup = setup,
-        type = type,
-        id = id
-    )
+) {
+    fun toJoke(): Joke {
+        return Joke (
+            punchline = punchline,
+            setup = setup,
+            type = type,
+            id = id
+        )
+    }
 }

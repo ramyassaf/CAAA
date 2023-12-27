@@ -8,13 +8,13 @@ import kotlinx.coroutines.flow.flow
 import retrofit2.HttpException
 import java.io.IOException
 
-class GetJokeUseCase(
+class GetJokeByIdUseCase(
     private val repository: JokeRepository
 ) {
-    operator fun invoke(): Flow<Resource<Joke>> = flow {
+    operator fun invoke(jokeId: String): Flow<Resource<Joke>> = flow {
         try {
-            emit(Resource.Loading<Joke>())
-            val joke = repository.getJoke()
+            emit(Resource.Loading())
+            val joke = repository.getJokeById(jokeId)
             emit(Resource.Success<Joke>(joke))
         } catch(e: HttpException) {
             emit(Resource.Error<Joke>(e.localizedMessage ?: "An unexpected error occurred"))

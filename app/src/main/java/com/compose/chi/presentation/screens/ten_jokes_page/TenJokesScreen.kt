@@ -50,7 +50,7 @@ fun TenJokesScreen(
             .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             AppTopAppBar(
-                title = "Random 10 Jokes",
+                title = "Random ${state.jokes.count()} Jokes",
                 scrollBehavior = scrollBehavior,
                 hasBackButton = false,
                 onBackPressed = {
@@ -70,8 +70,9 @@ fun TenJokesScreen(
                 TenJokesScreenContent(
                     jokes = state.jokes,
                     ptrState = ptrState,
-                    onClickNewJoke = {
-                        navController.navigate(Screen.JokeDetails.route)
+                    onSelectItem = {
+                        println("onSelectItem it = ${it.toString()}")
+                        navController.navigate(Screen.JokeDetails.route + "/${it}")
                     }
                 )
             }
@@ -97,7 +98,7 @@ private fun TenJokesScreenContent(
     jokes: List<Joke>,
     isLoading: Boolean = false,
     ptrState: PullRefreshState,
-    onClickNewJoke: () -> Unit
+    onSelectItem: (jokeId: Int) -> Unit
 ) {
     Box(modifier = Modifier
         .fillMaxSize()
@@ -111,7 +112,7 @@ private fun TenJokesScreenContent(
                 JokeListItem(
                     joke = joke,
                     onItemClick = {
-                        onClickNewJoke()
+                        onSelectItem(joke.id)
                     }
                 )
             }

@@ -22,3 +22,13 @@ fun JokeEntity.toJoke(): Joke {
         id = id
     )
 }
+
+fun Joke.toJokeEntity(): JokeEntity {
+    return JokeEntity (
+        punchline = punchline,
+        setup = setup,
+        type = type,
+        isFavourite = isFavourite,
+        id = id
+    )
+}

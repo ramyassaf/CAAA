@@ -2,6 +2,7 @@ package com.compose.chi.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -9,6 +10,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.compose.chi.ChiApplication
 import com.compose.chi.data.database.JokeDao
+import com.compose.chi.domain.use_case.GetJokeByIdUseCase
 import com.compose.chi.domain.use_case.GetJokeUseCase
 import com.compose.chi.domain.use_case.GetTenJokesUseCase
 import com.compose.chi.presentation.helpers.viewModelFactory
@@ -71,14 +73,18 @@ fun AppNavHost(
                 )
             }
             composable(
-                route = Screen.JokeDetails.route
+                route = Screen.JokeDetails.route + "/{jokeId}"
             ) {
                 val jokeDetailsViewModel = viewModel<JokeDetailsViewModel>(
                     factory = viewModelFactory {
-                        val getJokeUseCase: GetJokeUseCase = GetJokeUseCase(ChiApplication.appModule.jokeRepository)
-                        JokeDetailsViewModel(getJokeUseCase)
+                        val getJokeByIdUseCase: GetJokeByIdUseCase = GetJokeByIdUseCase(ChiApplication.appModule.jokeRepository)
+                        val jokeDao: JokeDao = ChiApplication.appModule.db.dao
+                        val jokeId = it.arguments?.getString("jokeId") ?: ""
+//                        JokeDetailsViewModel(getJokeByIdUseCase, jokeDao, jokeId)
+                        JokeDetailsViewModel(getJokeByIdUseCase, jokeDao, SavedStateHandle(), jokeId)
                     }
                 )
+
                 JokeDetailsScreen(
                     navController = navController,
                     viewModel = jokeDetailsViewModel
