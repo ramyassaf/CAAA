@@ -1,10 +1,13 @@
 package com.compose.chi.presentation.screens.ten_jokes_page
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.compose.chi.ChiApplication
 import com.compose.chi.common.Resource
 import com.compose.chi.domain.model.Joke
 import com.compose.chi.domain.use_case.GetTenJokesUseCase
+import com.compose.chi.presentation.helpers.viewModelFactory
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
@@ -43,5 +46,13 @@ class TenJokesViewModel(
                 }
             }
         }.launchIn(viewModelScope)
+    }
+
+    // ViewModel Factory in a companion object
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            val getTenJokesUseCase = GetTenJokesUseCase(ChiApplication.appModule.jokeRepository)
+            TenJokesViewModel(getTenJokesUseCase)
+        }
     }
 }
