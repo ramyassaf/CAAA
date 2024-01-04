@@ -7,12 +7,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
-import com.compose.chi.ChiApplication
-import com.compose.chi.data.database.JokeDao
-import com.compose.chi.domain.use_case.GetJokeByIdUseCase
-import com.compose.chi.domain.use_case.GetJokeUseCase
-import com.compose.chi.domain.use_case.GetTenJokesUseCase
-import com.compose.chi.presentation.helpers.viewModelFactory
 import com.compose.chi.presentation.screens.joke_details_page.JokeDetailsScreen
 import com.compose.chi.presentation.screens.joke_details_page.JokeDetailsViewModel
 import com.compose.chi.presentation.screens.joke_home_page.JokeHomeScreen
@@ -38,13 +32,7 @@ fun AppNavHost(
         composable(
             route = Screen.FirstTabScreen.route
         ) {
-            val homeViewModel = viewModel<JokeHomeViewModel>(
-                factory = viewModelFactory {
-                    val getJokeUseCase = GetJokeUseCase(ChiApplication.appModule.jokeRepository)
-                    val jokeDao: JokeDao = ChiApplication.appModule.db.dao
-                    JokeHomeViewModel(getJokeUseCase, jokeDao)
-                }
-            )
+            val homeViewModel = viewModel<JokeHomeViewModel>(factory = JokeHomeViewModel.Factory)
             JokeHomeScreen(
                 navController = navController,
                 viewModel = homeViewModel
@@ -60,12 +48,7 @@ fun AppNavHost(
             composable(
                 route = Screen.TenJokesScreen.route
             ) {
-                val tenJokesViewModel = viewModel<TenJokesViewModel>(
-                    factory = viewModelFactory {
-                        val getTenJokesUseCase = GetTenJokesUseCase(ChiApplication.appModule.jokeRepository)
-                        TenJokesViewModel(getTenJokesUseCase)
-                    }
-                )
+                val tenJokesViewModel = viewModel<TenJokesViewModel>(factory = TenJokesViewModel.Factory)
                 TenJokesScreen(
                     navController = navController,
                     viewModel = tenJokesViewModel
@@ -74,13 +57,7 @@ fun AppNavHost(
             composable(
                 route = Screen.JokeDetails.route + "/{jokeId}"
             ) {
-                val jokeDetailsViewModel = viewModel<JokeDetailsViewModel>(
-                    factory = viewModelFactory {
-                        val getJokeByIdUseCase = GetJokeByIdUseCase(ChiApplication.appModule.jokeRepository)
-                        val jokeDao: JokeDao = ChiApplication.appModule.db.dao
-                        JokeDetailsViewModel(it, getJokeByIdUseCase, jokeDao)
-                    }
-                )
+                val jokeDetailsViewModel = viewModel<JokeDetailsViewModel>(factory = JokeDetailsViewModel.Factory)
                 JokeDetailsScreen(
                     navController = navController,
                     viewModel = jokeDetailsViewModel
@@ -92,12 +69,7 @@ fun AppNavHost(
         composable(
             route = Screen.MyFavouriteJokesScreen.route
         ) {
-            val myFavouriteJokesViewModel = viewModel<MyFavouriteJokesViewModel>(
-                factory = viewModelFactory {
-                    val jokeDao: JokeDao = ChiApplication.appModule.db.dao
-                    MyFavouriteJokesViewModel(jokeDao)
-                }
-            )
+            val myFavouriteJokesViewModel = viewModel<MyFavouriteJokesViewModel>(factory = MyFavouriteJokesViewModel.Factory)
             MyFavouriteJokesScreen(
                 navController = navController,
                 viewModel = myFavouriteJokesViewModel
