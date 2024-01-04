@@ -2,7 +2,6 @@ package com.compose.chi.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -41,7 +40,7 @@ fun AppNavHost(
         ) {
             val homeViewModel = viewModel<JokeHomeViewModel>(
                 factory = viewModelFactory {
-                    val getJokeUseCase: GetJokeUseCase = GetJokeUseCase(ChiApplication.appModule.jokeRepository)
+                    val getJokeUseCase = GetJokeUseCase(ChiApplication.appModule.jokeRepository)
                     val jokeDao: JokeDao = ChiApplication.appModule.db.dao
                     JokeHomeViewModel(getJokeUseCase, jokeDao)
                 }
@@ -63,7 +62,7 @@ fun AppNavHost(
             ) {
                 val tenJokesViewModel = viewModel<TenJokesViewModel>(
                     factory = viewModelFactory {
-                        val getTenJokesUseCase: GetTenJokesUseCase = GetTenJokesUseCase(ChiApplication.appModule.jokeRepository)
+                        val getTenJokesUseCase = GetTenJokesUseCase(ChiApplication.appModule.jokeRepository)
                         TenJokesViewModel(getTenJokesUseCase)
                     }
                 )
@@ -77,14 +76,11 @@ fun AppNavHost(
             ) {
                 val jokeDetailsViewModel = viewModel<JokeDetailsViewModel>(
                     factory = viewModelFactory {
-                        val getJokeByIdUseCase: GetJokeByIdUseCase = GetJokeByIdUseCase(ChiApplication.appModule.jokeRepository)
+                        val getJokeByIdUseCase = GetJokeByIdUseCase(ChiApplication.appModule.jokeRepository)
                         val jokeDao: JokeDao = ChiApplication.appModule.db.dao
-                        val jokeId = it.arguments?.getString("jokeId") ?: ""
-//                        JokeDetailsViewModel(getJokeByIdUseCase, jokeDao, jokeId)
-                        JokeDetailsViewModel(getJokeByIdUseCase, jokeDao, SavedStateHandle(), jokeId)
+                        JokeDetailsViewModel(it, getJokeByIdUseCase, jokeDao)
                     }
                 )
-
                 JokeDetailsScreen(
                     navController = navController,
                     viewModel = jokeDetailsViewModel

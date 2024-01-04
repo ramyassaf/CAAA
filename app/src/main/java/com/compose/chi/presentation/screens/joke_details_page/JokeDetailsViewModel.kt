@@ -16,26 +16,18 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class JokeDetailsViewModel(
+    private val savedStateHandle: SavedStateHandle,
     private val getJokeByIdUseCase: GetJokeByIdUseCase,
-    private val dao: JokeDao,
-    savedStateHandle: SavedStateHandle,
-    private val jokeId: String
+    private val dao: JokeDao
 ): ViewModel() {
 
     private val _state = MutableStateFlow(JokeDetailsState())
     val state = _state.asStateFlow()
 
     init {
-        println("JokeDetailsViewModel()")
-
-        println("jokeId= $jokeId")
-        getJokeById(jokeId)
-//        var jId: String = savedStateHandle.get<String>("jokeId") ?: "0"
-//        println("jId= $jId")
-//        savedStateHandle.get<String>("jokeId")?.let { jokeId ->
-//            println("2 jokeId= $jokeId")
-//            getJokeById(jokeId)
-//        }
+        savedStateHandle.get<String>("jokeId")?.let { jokeId ->
+            getJokeById(jokeId)
+        }
     }
 
     private fun getJokeById(jokeId: String) {
