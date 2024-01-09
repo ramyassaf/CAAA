@@ -8,6 +8,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 
@@ -22,8 +24,19 @@ fun AppTopAppBar(
 ) {
 
     TopAppBar(
+        // TODO: Check if it's a bug in Material3 TopAppBar (Since titleContentColor, navigationIconContentColor, actionIconContentColor are not working)
+        // Customize Colors here
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            titleContentColor = MaterialTheme.colorScheme.onPrimary,
+            navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+            actionIconContentColor = MaterialTheme.colorScheme.onPrimary
+        ),
         title = {
-            Text(text = title)
+            Text(
+                text = title,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
         },
         navigationIcon = {
             if (hasBackButton) {
@@ -32,7 +45,8 @@ fun AppTopAppBar(
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Go back"
+                        contentDescription = "Go back",
+                        tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }
             }
@@ -43,7 +57,8 @@ fun AppTopAppBar(
             ) {
                 Icon(
                     imageVector = Icons.Default.Settings,
-                    contentDescription = "Settings"
+                    contentDescription = "Settings",
+                    tint = MaterialTheme.colorScheme.onPrimary
                 )
 
             }
