@@ -78,7 +78,7 @@ fun JokeHomeScreen(
                         viewModel.getJoke()
                     },
                     onLikeJoke = {
-                        viewModel.toggleLikeJoke(joke)
+                        viewModel.toggleLikeJokeInDb(joke)
                     },
                     onClick10NewJokes = {
                         navController.navigate(Screen.TenJokesScreen.route) {
