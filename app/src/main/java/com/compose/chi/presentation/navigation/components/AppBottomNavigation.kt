@@ -12,7 +12,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,13 +23,12 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 fun AppBottomNavigation(
     items: List<BottomNavItem>,
     navController: NavController,
-    modifier: Modifier = Modifier.height(72.dp),
     onItemClick: (BottomNavItem) -> Unit
 ) {
     val backStackEntry = navController.currentBackStackEntryAsState()
     BottomNavigation(
-        modifier = modifier,
-        backgroundColor = MaterialTheme.colorScheme.secondary,
+        modifier = Modifier.height(72.dp),
+        backgroundColor = MaterialTheme.colorScheme.primary,
         elevation = 5.dp
     ) {
         items.forEach { item ->
@@ -38,30 +36,37 @@ fun AppBottomNavigation(
             BottomNavigationItem(
                 selected = selected,
                 onClick = { onItemClick(item) },
-                selectedContentColor = Color.Green,
-                unselectedContentColor = Color.Gray,
+                // TODO: Check if it's a bug in Material3 BottomNavigation (Since selectedContentColor, unselectedContentColor are not working)
+                selectedContentColor = MaterialTheme.colorScheme.tertiary,
+                unselectedContentColor = MaterialTheme.colorScheme.onPrimary,
                 icon = {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         if(item.badgeCount > 0) {
                             BadgedBox(badge = {
-                                Text(text = item.badgeCount.toString())
+                                Text(
+                                    text = item.badgeCount.toString(),
+                                    color = if (selected) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onPrimary
+                                )
                             }) {
                                 Icon(
                                     imageVector = item.icon,
-                                    contentDescription = item.name
+                                    contentDescription = item.name,
+                                    tint = if (selected) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onPrimary
                                 )
                             }
                         } else {
                             Icon(
                                 imageVector = item.icon,
-                                contentDescription = item.name
+                                contentDescription = item.name,
+                                tint = if (selected) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onPrimary
                             )
                         }
                         if(selected) {
                             Text(
                                 text = item.name,
                                 textAlign = TextAlign.Center,
-                                fontSize = 10.sp
+                                fontSize = 10.sp,
+                                color = MaterialTheme.colorScheme.tertiary
                             )
                         }
                     }

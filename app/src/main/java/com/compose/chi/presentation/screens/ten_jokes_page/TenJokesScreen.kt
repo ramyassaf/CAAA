@@ -23,7 +23,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -102,8 +101,9 @@ private fun TenJokesScreenContent(
 ) {
     Box(modifier = Modifier
         .fillMaxSize()
-        .background(Color.White)
-        .pullRefresh(ptrState)) { // 2
+        .background(MaterialTheme.colorScheme.background)
+        .pullRefresh(ptrState)
+    ) { // 2
         LazyColumn(
             state = rememberLazyListState(),
             modifier = Modifier.fillMaxSize()
