@@ -81,7 +81,14 @@ fun JokeHomeScreen(
                         viewModel.toggleLikeJoke(joke)
                     },
                     onClick10NewJokes = {
-                        navController.navigate(Screen.TenJokesScreen.route)
+                        navController.navigate(Screen.TenJokesScreen.route) {
+                            // Support multiple back stacks
+                            launchSingleTop = true
+                            restoreState = true
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                        }
                     }
                 )
             }

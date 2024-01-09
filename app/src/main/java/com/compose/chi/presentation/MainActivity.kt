@@ -71,7 +71,14 @@ class MainActivity : ComponentActivity(), AnalyticsLogger by AnalyticsLoggerImpl
                             navController = navController,
                             onItemClick = {
                                 println("it.route = ${it.route}")
-                                navController.navigate(it.route)
+                                navController.navigate(it.route) {
+                                    // Support multiple back stacks
+                                    launchSingleTop = true
+                                    restoreState = true
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                }
                             }
                         )
                     }
