@@ -17,6 +17,8 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class JokeDetailsViewModel(
     private val savedStateHandle: SavedStateHandle,
@@ -37,7 +39,12 @@ class JokeDetailsViewModel(
         getJokeByIdUseCase(jokeId).onEach { result ->
             when (result) {
                 is Resource.Success -> {
-                    _state.update { JokeDetailsState(joke = result.data) }
+                    if (isJokeLiked(joke = result.data)) {
+                        val jokeCopyFav = result.data?.copy(isFavourite = true)
+                        _state.update { JokeDetailsState(joke = jokeCopyFav) }
+                    } else {
+                        _state.update { JokeDetailsState(joke = result.data) }
+                    }
                 }
                 is Resource.Error -> {
                     _state.update {
@@ -53,7 +60,7 @@ class JokeDetailsViewModel(
         }.launchIn(viewModelScope)
     }
 
-    fun toggleLikeJoke(joke: Joke) {
+    fun toggleLikeJokeInDb(joke: Joke) {
         val isFavBeforeClick = joke.isFavourite
         val jokeCopyFav = joke.copy(isFavourite = !isFavBeforeClick)
 
@@ -61,6 +68,18 @@ class JokeDetailsViewModel(
             _state.update { JokeDetailsState(joke = jokeCopyFav) }
 
             dao.upsertJoke(jokeCopyFav.toJokeEntity())
+        }
+    }
+
+    private suspend fun isJokeLiked(joke: Joke?): Boolean {
+        if (joke == null) return false
+
+        return suspendCoroutine { continuation ->
+            viewModelScope.launch {
+                val liked = dao.isFavoriteJoke(jokeId = joke.id)
+
+                continuation.resume(liked)
+            }
         }
     }
 

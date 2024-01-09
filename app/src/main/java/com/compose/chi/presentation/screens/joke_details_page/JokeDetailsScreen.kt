@@ -72,7 +72,7 @@ fun JokeDetailsScreen(
                 JokeDetailsScreenContent(
                     joke = joke,
                     onLikeJoke = {
-                        viewModel.toggleLikeJoke(joke)
+                        viewModel.toggleLikeJokeInDb(joke)
                     },
                 )
             }
