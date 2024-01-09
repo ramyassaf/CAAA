@@ -19,7 +19,8 @@ import com.compose.chi.presentation.screens.ten_jokes_page.TenJokesViewModel
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onToggleDarkMode: () -> Unit
 ) {
     // Nested Navigation Graph
     NavHost(
@@ -35,45 +36,37 @@ fun AppNavHost(
             val homeViewModel = viewModel<JokeHomeViewModel>(factory = JokeHomeViewModel.Factory)
             JokeHomeScreen(
                 navController = navController,
-                viewModel = homeViewModel
+                viewModel = homeViewModel,
+                onToggleDarkMode = onToggleDarkMode
             )
         }
 
         // Screen with a navigation, a navigation inside a nav
-        navigation(
-            startDestination = Screen.TenJokesScreen.route,
-            route = Screen.SecondTabNavigationScreen.route
-        ) {
+//        navigation(
+//            route = Screen.SecondTabNavigationScreen.route,
+//            startDestination = Screen.TenJokesScreen.route
+//        ) {
 
             composable(
                 route = Screen.TenJokesScreen.route
             ) {
                 val tenJokesViewModel = viewModel<TenJokesViewModel>(factory = TenJokesViewModel.Factory)
-                TenJokesScreen(
-                    navController = navController,
-                    viewModel = tenJokesViewModel
-                )
+                TenJokesScreen(navController = navController, viewModel = tenJokesViewModel)
             }
             composable(
                 route = Screen.JokeDetails.route + "/{jokeId}"
             ) {
                 val jokeDetailsViewModel = viewModel<JokeDetailsViewModel>(factory = JokeDetailsViewModel.Factory)
-                JokeDetailsScreen(
-                    navController = navController,
-                    viewModel = jokeDetailsViewModel
-                )
+                JokeDetailsScreen(navController = navController, viewModel = jokeDetailsViewModel)
             }
-        }
+//        }
 
         // Screen without a navigation
         composable(
             route = Screen.MyFavouriteJokesScreen.route
         ) {
             val myFavouriteJokesViewModel = viewModel<MyFavouriteJokesViewModel>(factory = MyFavouriteJokesViewModel.Factory)
-            MyFavouriteJokesScreen(
-                navController = navController,
-                viewModel = myFavouriteJokesViewModel
-            )
+            MyFavouriteJokesScreen(navController = navController, viewModel = myFavouriteJokesViewModel)
         }
     }
 }

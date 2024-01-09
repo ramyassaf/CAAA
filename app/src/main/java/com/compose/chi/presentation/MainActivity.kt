@@ -5,23 +5,22 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.rememberNavController
-import com.compose.chi.ChiApplication
 import com.compose.chi.analytics.AnalyticsLogger
 import com.compose.chi.analytics.AnalyticsLoggerImpl
-import com.compose.chi.data.database.JokeDao
-import com.compose.chi.presentation.helpers.viewModelFactory
 import com.compose.chi.presentation.navigation.components.BottomNavItem
 import com.compose.chi.presentation.navigation.components.AppBottomNavigation
 import com.compose.chi.presentation.navigation.AppNavHost
@@ -30,7 +29,6 @@ import com.compose.chi.presentation.screens.my_favourite_jokes_page.MyFavouriteJ
 import com.compose.chi.presentation.ui.theme.CHITheme
 
 class MainActivity : ComponentActivity(), AnalyticsLogger by AnalyticsLoggerImpl() {
-    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -38,16 +36,14 @@ class MainActivity : ComponentActivity(), AnalyticsLogger by AnalyticsLoggerImpl
         registerLifecycleOwner(this)
 
         setContent {
-            CHITheme {
+
+            var darkTheme by remember { mutableStateOf(false) }
+
+            CHITheme(darkTheme = darkTheme) {
                 val navController = rememberNavController()
 
-                val myFavouriteJokesViewModel = viewModel<MyFavouriteJokesViewModel>(
-                    factory = viewModelFactory {
-                        val jokeDao: JokeDao = ChiApplication.appModule.db.dao
-                        MyFavouriteJokesViewModel(jokeDao)
-                    }
-                )
-
+                // Collect Favourite
+                val myFavouriteJokesViewModel = viewModel<MyFavouriteJokesViewModel>(factory = MyFavouriteJokesViewModel.Factory)
                 val myFavState by myFavouriteJokesViewModel.state.collectAsState()
 
                 Scaffold(
@@ -82,7 +78,10 @@ class MainActivity : ComponentActivity(), AnalyticsLogger by AnalyticsLoggerImpl
                 ){ paddingValues ->
                     AppNavHost(
                         navController = navController,
-                        modifier = Modifier.padding(paddingValues)
+                        modifier = Modifier.padding(paddingValues),
+                        onToggleDarkMode = {
+                            darkTheme = !darkTheme
+                        }
                     )
                 }
             }

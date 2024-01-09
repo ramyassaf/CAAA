@@ -29,7 +29,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -37,6 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.compose.chi.domain.model.Joke
 import com.compose.chi.presentation.navigation.Screen
 import com.compose.chi.presentation.navigation.components.AppTopAppBar
@@ -46,7 +46,8 @@ import com.compose.chi.presentation.ui.theme.*
 @Composable
 fun JokeHomeScreen(
     navController: NavController,
-    viewModel: JokeHomeViewModel
+    viewModel: JokeHomeViewModel,
+    onToggleDarkMode: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -61,7 +62,7 @@ fun JokeHomeScreen(
                 scrollBehavior = scrollBehavior,
                 hasBackButton = false,
                 onBackPressed = {},
-                onSettingsPressed = {}
+                onSettingsPressed = onToggleDarkMode
             )
         },
     ){ paddingValues ->
@@ -80,7 +81,7 @@ fun JokeHomeScreen(
                         viewModel.toggleLikeJoke(joke)
                     },
                     onClick10NewJokes = {
-                        navController.navigate(Screen.SecondTabNavigationScreen.route)
+                        navController.navigate(Screen.TenJokesScreen.route)
                     }
                 )
             }
@@ -111,9 +112,7 @@ private fun JokeHomeScreenContent(
     onClick10NewJokes: () -> Unit
 ) {
     LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White),
+        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(content_padding)
     ) {
         item {
@@ -121,29 +120,30 @@ private fun JokeHomeScreenContent(
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 text = "Random Joke",
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+
             )
             Column(
                 modifier = Modifier.fillMaxHeight(),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
-                if(isLoading) {
+                if (isLoading) {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
                 } else {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center,
                         text = "Joke: '${joke?.setup}'",
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyLarge
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center,
                         text = "Punchline: '${joke?.punchline}'",
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyLarge
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
@@ -152,7 +152,8 @@ private fun JokeHomeScreenContent(
                     modifier = Modifier.align(Alignment.End)
                 ) {
                     Icon(
-                        imageVector = if(joke?.isFavourite == true)  Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                        imageVector = if (joke?.isFavourite == true) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                        tint = MaterialTheme.colorScheme.error,
                         contentDescription = "Favourite"
                     )
                 }
@@ -185,6 +186,17 @@ private fun JokeHomeScreenContent(
 @Composable
 fun JokeHomeScreen() {
     CHITheme {
+        val joke = Joke(punchline = "punchline", setup = "setup", type = "default", id = 1)
+        JokeHomeScreenContent(joke = joke, false,  {}, {}, {})
+    }
+}
+
+@Preview
+@Composable
+fun JokeHomeScreenDark() {
+    CHITheme(
+        darkTheme = true,
+    ) {
         val joke = Joke(punchline = "punchline", setup = "setup", type = "default", id = 1)
         JokeHomeScreenContent(joke = joke, false,  {}, {}, {})
     }
