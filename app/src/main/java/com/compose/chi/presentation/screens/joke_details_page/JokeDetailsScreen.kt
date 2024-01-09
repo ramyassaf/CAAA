@@ -28,7 +28,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -103,8 +102,7 @@ private fun JokeDetailsScreenContent(
     onLikeJoke: () -> Unit,
 ) {
     LazyColumn(
-        modifier = Modifier.fillMaxSize()
-            .background(Color.White),
+        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(content_padding)
     ) {
         item {
@@ -112,7 +110,7 @@ private fun JokeDetailsScreenContent(
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 text = "Joke Details",
-                fontSize = 26.sp,
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
             Column(
@@ -127,14 +125,14 @@ private fun JokeDetailsScreenContent(
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center,
                         text = "Joke: '${joke?.setup}'",
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyLarge
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center,
                         text = "Punchline: '${joke?.punchline}'",
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyLarge
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
@@ -144,6 +142,7 @@ private fun JokeDetailsScreenContent(
                 ) {
                     Icon(
                         imageVector = if(joke?.isFavourite == true)  Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                        tint = MaterialTheme.colorScheme.error,
                         contentDescription = "Favourite"
                     )
                 }
