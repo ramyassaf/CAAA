@@ -1,6 +1,7 @@
 package com.compose.chi.domain.repository
 
 import com.compose.chi.domain.model.Joke
+import kotlinx.coroutines.flow.Flow
 
 // **
 interface JokeRepository {
@@ -10,4 +11,6 @@ interface JokeRepository {
     suspend fun getTenJokes(): List<Joke>
 
     suspend fun getJokeById(jokeId: String): Joke
+
+    fun getLikedJokes(): Flow<List<Joke>>
 }

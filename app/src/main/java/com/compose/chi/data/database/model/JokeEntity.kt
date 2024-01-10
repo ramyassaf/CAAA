@@ -12,15 +12,15 @@ data class JokeEntity(
     var isFavourite: Boolean = false,
     @PrimaryKey(autoGenerate = true)
     val id: Int
-)
-
-fun JokeEntity.toJoke(): Joke {
-    return Joke(
-        punchline = punchline,
-        setup = setup,
-        type = type,
-        id = id
-    )
+) {
+    fun toJoke(): Joke {
+        return Joke (
+            punchline = punchline,
+            setup = setup,
+            type = type,
+            id = id
+        )
+    }
 }
 
 fun Joke.toJokeEntity(): JokeEntity {

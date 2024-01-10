@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface JokeDao {
 
-    @Upsert()
+    @Upsert
     suspend fun upsertJoke(joke: JokeEntity)
 
     @Delete

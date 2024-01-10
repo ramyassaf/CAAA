@@ -42,7 +42,7 @@ class AppModuleImpl(
     }
 
     override val jokeRepository: JokeRepository by lazy {
-        JokeRepositoryImpl(jokeApi)
+        JokeRepositoryImpl(jokeApi, db.dao)
     }
 
     override val db: AppDatabase by lazy {
