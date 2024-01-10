@@ -6,13 +6,19 @@ import kotlinx.coroutines.flow.Flow
 // **
 interface JokeRepository {
 
+    // Remote
     suspend fun getJoke(): Joke
 
     suspend fun getTenJokes(): List<Joke>
 
     suspend fun getJokeById(jokeId: String): Joke
 
+    // Local (db)
     fun getLikedJokes(): Flow<List<Joke>>
 
     fun isJokeLiked(jokeId: Int): Flow<Boolean>
+
+    suspend fun upsertJoke(joke: Joke)
+
+    suspend fun deleteAllJokes()
 }

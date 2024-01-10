@@ -53,8 +53,9 @@ class TenJokesViewModel(
     // ViewModel Factory in a companion object
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
-            val getTenJokesUseCase = GetTenJokesUseCase(ChiApplication.appModule.jokeRepository)
-            TenJokesViewModel(getTenJokesUseCase)
+            TenJokesViewModel(
+                GetTenJokesUseCase(ChiApplication.appModule.jokeRepository)
+            )
         }
     }
 }

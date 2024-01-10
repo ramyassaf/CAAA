@@ -23,7 +23,7 @@ interface JokeDao {
     fun getAllLikedJokes(): Flow<List<JokeEntity>>
 
     @Query("DELETE FROM jokes")
-    fun deleteAllJokes()
+    suspend fun deleteAllJokes()
 
     @Query("SELECT EXISTS(SELECT 1 FROM jokes WHERE id = :jokeId AND isFavourite LIMIT 1)")
     fun isFavoriteJoke(jokeId: Int): Flow<Boolean>

@@ -5,5 +5,5 @@ data class Joke(
     val punchline: String,
     val setup: String,
     val type: String,
-    var isFavourite: Boolean = false
+    val isFavourite: Boolean = false
 )

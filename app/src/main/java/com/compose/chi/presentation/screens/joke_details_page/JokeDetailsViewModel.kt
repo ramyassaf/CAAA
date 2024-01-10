@@ -6,12 +6,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.compose.chi.ChiApplication
 import com.compose.chi.common.Resource
-import com.compose.chi.data.database.JokeDao
-import com.compose.chi.data.database.model.toJokeEntity
 import com.compose.chi.domain.model.Joke
 import com.compose.chi.domain.use_case.GetJokeByIdUseCase
 import com.compose.chi.domain.use_case.IsJokeLikedUseCase
+import com.compose.chi.domain.use_case.UpsertJokeUseCase
 import com.compose.chi.presentation.helpers.viewModelFactory
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
@@ -23,11 +23,13 @@ class JokeDetailsViewModel(
     savedStateHandle: SavedStateHandle,
     private val getJokeByIdUseCase: GetJokeByIdUseCase,
     private val isJokeLikedUseCase: IsJokeLikedUseCase,
-    private val dao: JokeDao
-) : ViewModel() {
+    private val upsertJokeUseCase: UpsertJokeUseCase
+): ViewModel() {
 
     private val _state = MutableStateFlow(JokeDetailsState())
     val state = _state.asStateFlow()
+
+    private var getJokeByIdJob: Job? = null
 
     init {
         savedStateHandle.get<String>("jokeId")?.let { jokeId ->
@@ -36,7 +38,8 @@ class JokeDetailsViewModel(
     }
 
     private fun getJokeById(jokeId: String) {
-        getJokeByIdUseCase(jokeId).onEach { result ->
+        getJokeByIdJob?.cancel()
+        getJokeByIdJob = getJokeByIdUseCase(jokeId).onEach { result ->
             when (result) {
                 is Resource.Success -> {
                     result.data?.let { joke ->
@@ -75,17 +78,21 @@ class JokeDetailsViewModel(
         viewModelScope.launch {
             _state.update { JokeDetailsState(joke = jokeCopyFav) }
 
-            dao.upsertJoke(jokeCopyFav.toJokeEntity())
+            upsertJokeUseCase(jokeCopyFav)
         }
     }
 
     // ViewModel Factory in a companion object
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
-            val getJokeByIdUseCase = GetJokeByIdUseCase(ChiApplication.appModule.jokeRepository)
-            val isJokeLikedUseCase = IsJokeLikedUseCase(ChiApplication.appModule.jokeRepository)
-            val jokeDao: JokeDao = ChiApplication.appModule.db.dao
-            JokeDetailsViewModel(it, getJokeByIdUseCase, isJokeLikedUseCase, jokeDao)
+            ChiApplication.appModule.jokeRepository.let { jokeRepo ->
+                JokeDetailsViewModel(
+                    it,
+                    GetJokeByIdUseCase(jokeRepo),
+                    IsJokeLikedUseCase(jokeRepo),
+                    UpsertJokeUseCase(jokeRepo)
+                )
+            }
         }
     }
 }

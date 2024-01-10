@@ -1,53 +1,40 @@
+package com.compose.chi.domain.use_case
+
 import com.compose.chi.common.Resource
 import com.compose.chi.data.remote.dto.JokeDto
 import com.compose.chi.domain.model.Joke
 import com.compose.chi.domain.repository.JokeRepository
-import com.compose.chi.domain.use_case.GetJokeByIdUseCase
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Assert.assertEquals
-import org.junit.Before
+import org.junit.Assert.assertTrue
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito.`when`
-import org.mockito.MockitoAnnotations
 import retrofit2.HttpException
 import retrofit2.Response
 import java.io.IOException
-import okhttp3.MediaType.Companion.toMediaType
-import org.junit.Assert.assertTrue
 
 class GetJokeByIdUseCaseTest {
-
-    @Mock
-    private lateinit var mockRepository: JokeRepository
-
-    private lateinit var getJokeByIdUseCase: GetJokeByIdUseCase
-
-    @Before
-    fun setup() {
-        MockitoAnnotations.openMocks(this)
-        getJokeByIdUseCase = GetJokeByIdUseCase(mockRepository)
-    }
 
     @Test
     fun `get joke by id success`() = runTest {
         // Arrange
-        val jokeId = "1" // Make sure jokeId is a String
+        val jokeId = "1"
         val mockJokeDto = JokeDto(
             id = jokeId.toInt(),
             punchline = "Test joke",
             setup = "joke setup",
             type = "joke type"
         )
-
-        `when`(mockRepository.getJokeById(jokeId)).thenReturn(mockJokeDto.toJoke())
+        val mockRepository: JokeRepository = mockk {
+            coEvery { getJokeById(jokeId) } returns mockJokeDto.toJoke()
+        }
 
         // Act
-        val result = getJokeByIdUseCase(jokeId).toList() // Collect the flow into a list
+        val result = GetJokeByIdUseCase(mockRepository)(jokeId).toList()
 
         // Assert
         assertEquals(2, result.size) // Expect loading and success states
@@ -66,11 +53,12 @@ class GetJokeByIdUseCaseTest {
         val contentType = "text/plain".toMediaType()
         val errorResponseBody = expectedErrorMessage.toResponseBody(contentType)
         val response: Response<Any> = Response.error(404, errorResponseBody)
-
-        `when`(mockRepository.getJokeById(jokeId)).thenThrow(HttpException(response))
+        val mockRepository: JokeRepository = mockk {
+            coEvery { getJokeById(jokeId) } throws HttpException(response)
+        }
 
         // Act
-        val result = getJokeByIdUseCase(jokeId).toList() // Collect the flow into a list
+        val result = GetJokeByIdUseCase(mockRepository)(jokeId).toList()
 
         // Print the result for debugging
         println("Actual result: $result")

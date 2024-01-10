@@ -9,7 +9,7 @@ data class JokeEntity(
     val punchline: String,
     val setup: String,
     val type: String,
-    var isFavourite: Boolean = false,
+    val isFavourite: Boolean = false,
     @PrimaryKey(autoGenerate = true)
     val id: Int
 ) {

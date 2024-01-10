@@ -5,12 +5,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.compose.chi.ChiApplication
 import com.compose.chi.common.Resource
-import com.compose.chi.data.database.JokeDao
-import com.compose.chi.data.database.model.toJokeEntity
 import com.compose.chi.domain.model.Joke
 import com.compose.chi.domain.use_case.GetJokeUseCase
 import com.compose.chi.domain.use_case.IsJokeLikedUseCase
+import com.compose.chi.domain.use_case.UpsertJokeUseCase
 import com.compose.chi.presentation.helpers.viewModelFactory
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
@@ -21,22 +21,25 @@ import kotlinx.coroutines.launch
 class JokeHomeViewModel(
     private val getJokeUseCase: GetJokeUseCase,
     private val isJokeLikedUseCase: IsJokeLikedUseCase,
-    private val dao: JokeDao
-) : ViewModel() {
+    private val upsertJokeUseCase: UpsertJokeUseCase
+): ViewModel() {
 
     private val _state = MutableStateFlow(JokeHomeState())
     val state = _state.asStateFlow()
+
+    private var getJokeJob: Job? = null
 
     init {
         getJoke()
     }
 
     fun getJoke() {
-        getJokeUseCase().onEach { result ->
+        getJokeJob?.cancel()
+        getJokeJob = getJokeUseCase().onEach { result ->
             when (result) {
                 is Resource.Success -> {
                     result.data?.let { joke ->
-                        // Collect the flow from IsJokeLikedUseCase and consume it's values each time it changes,
+                        // Collect the flow from IsJokeLikedUseCase and consume its values each time it changes,
                         // then update _state with the new isFavourite value
                         isJokeLikedUseCase(joke.id).collect { isLiked ->
                             if (isLiked) {
@@ -71,17 +74,20 @@ class JokeHomeViewModel(
         viewModelScope.launch {
             _state.update { JokeHomeState(joke = jokeCopyFav) }
 
-            dao.upsertJoke(jokeCopyFav.toJokeEntity())
+            upsertJokeUseCase(jokeCopyFav)
         }
     }
 
     // ViewModel Factory in a companion object
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
-            val getJokeUseCase = GetJokeUseCase(ChiApplication.appModule.jokeRepository)
-            val isJokeLikedUseCase = IsJokeLikedUseCase(ChiApplication.appModule.jokeRepository)
-            val jokeDao: JokeDao = ChiApplication.appModule.db.dao
-            JokeHomeViewModel(getJokeUseCase, isJokeLikedUseCase, jokeDao)
+            ChiApplication.appModule.jokeRepository.let { jokeRepo ->
+                JokeHomeViewModel(
+                    GetJokeUseCase(jokeRepo),
+                    IsJokeLikedUseCase(jokeRepo),
+                    UpsertJokeUseCase(jokeRepo)
+                )
+            }
         }
     }
 }
