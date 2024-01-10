@@ -28,8 +28,13 @@ class JokeRepositoryImpl(
     override fun getLikedJokes(): Flow<List<Joke>> = flow {
         jokeDao.getAllLikedJokes().collect {
             val mappedList = it.map { jokeEntity -> jokeEntity.toJoke() }
-            println("1 mappedList = $mappedList")
             emit(mappedList)
+        }
+    }
+
+    override fun isJokeLiked(jokeId: Int): Flow<Boolean> = flow {
+        jokeDao.isFavoriteJoke(jokeId = jokeId).collect {
+            emit(it)
         }
     }
 }

@@ -13,4 +13,6 @@ interface JokeRepository {
     suspend fun getJokeById(jokeId: String): Joke
 
     fun getLikedJokes(): Flow<List<Joke>>
+
+    fun isJokeLiked(jokeId: Int): Flow<Boolean>
 }

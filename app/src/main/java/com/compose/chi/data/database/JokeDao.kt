@@ -26,5 +26,5 @@ interface JokeDao {
     fun deleteAllJokes()
 
     @Query("SELECT EXISTS(SELECT 1 FROM jokes WHERE id = :jokeId AND isFavourite LIMIT 1)")
-    suspend fun isFavoriteJoke(jokeId: Int): Boolean
+    fun isFavoriteJoke(jokeId: Int): Flow<Boolean>
 }
