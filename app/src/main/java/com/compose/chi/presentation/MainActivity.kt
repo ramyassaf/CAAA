@@ -7,8 +7,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -43,7 +43,8 @@ class MainActivity : ComponentActivity(), AnalyticsLogger by AnalyticsLoggerImpl
                 val navController = rememberNavController()
 
                 // Collect Favourite
-                val myFavouriteJokesViewModel = viewModel<MyFavouriteJokesViewModel>(factory = MyFavouriteJokesViewModel.Factory)
+                val myFavouriteJokesViewModel =
+                    viewModel<MyFavouriteJokesViewModel>(factory = MyFavouriteJokesViewModel.Factory)
                 val myFavState by myFavouriteJokesViewModel.state.collectAsState()
 
                 Scaffold(
@@ -58,8 +59,8 @@ class MainActivity : ComponentActivity(), AnalyticsLogger by AnalyticsLoggerImpl
                                 ),
                                 BottomNavItem(
                                     name = "Ten Jokes",
-                                    route = Screen.TenJokesScreen.route,
-                                    icon = Icons.Default.List
+                                    route = Screen.SecondTabNavigationScreen.route,
+                                    icon = Icons.AutoMirrored.Filled.List
                                 ),
                                 BottomNavItem(
                                     name = "My Favourite💚Jokes",
@@ -82,7 +83,7 @@ class MainActivity : ComponentActivity(), AnalyticsLogger by AnalyticsLoggerImpl
                             }
                         )
                     }
-                ){ paddingValues ->
+                ) { paddingValues ->
                     AppNavHost(
                         navController = navController,
                         modifier = Modifier.padding(paddingValues),

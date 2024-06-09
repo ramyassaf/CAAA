@@ -9,11 +9,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.FloatingActionButton
-import androidx.compose.material.Icon
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -71,13 +70,13 @@ fun MyFavouriteJokesScreen(
                 )
             }
         },
-    ){ paddingValues ->
+    ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            if(state.jokes.isNotEmpty() || state.isLoading) {
+            if (state.jokes.isNotEmpty() || state.isLoading) {
                 MyFavouriteJokesScreenContent(
                     jokes = state.jokes,
                     onSelectItem = {
@@ -87,7 +86,7 @@ fun MyFavouriteJokesScreen(
                 )
             }
 
-            if(state.error.isNotBlank()) {
+            if (state.error.isNotBlank()) {
                 Text(
                     text = state.error,
                     color = MaterialTheme.colorScheme.error,
@@ -103,15 +102,15 @@ fun MyFavouriteJokesScreen(
 }
 
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun MyFavouriteJokesScreenContent(
     jokes: List<Joke>,
     onSelectItem: (jokeId: Int) -> Unit
 ) {
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .background(MaterialTheme.colorScheme.background)
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
     ) { // 2
         LazyColumn(
             state = rememberLazyListState(),
@@ -129,17 +128,16 @@ private fun MyFavouriteJokesScreenContent(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Preview
 @Composable
 fun MyFavouriteJokesScreen() {
     CHITheme {
         val jokes = mutableListOf<Joke>()
         for (i in 1..50) {
-            val joke = Joke(punchline = "punchline $i", setup = "setup $i", type = "default", id = i)
+            val joke =
+                Joke(punchline = "punchline $i", setup = "setup $i", type = "default", id = i)
             jokes.add(joke)
         }
-        val ptrState = rememberPullRefreshState(false, {}) // 1
-        MyFavouriteJokesScreenContent(jokes = jokes, {})
+        MyFavouriteJokesScreenContent(jokes = jokes) {}
     }
 }

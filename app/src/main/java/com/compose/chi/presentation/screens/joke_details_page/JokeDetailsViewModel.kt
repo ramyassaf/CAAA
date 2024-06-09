@@ -24,7 +24,7 @@ class JokeDetailsViewModel(
     private val savedStateHandle: SavedStateHandle,
     private val getJokeByIdUseCase: GetJokeByIdUseCase,
     private val dao: JokeDao
-): ViewModel() {
+) : ViewModel() {
 
     private val _state = MutableStateFlow(JokeDetailsState())
     val state = _state.asStateFlow()
@@ -46,6 +46,7 @@ class JokeDetailsViewModel(
                         _state.update { JokeDetailsState(joke = result.data) }
                     }
                 }
+
                 is Resource.Error -> {
                     _state.update {
                         JokeDetailsState(
@@ -53,6 +54,7 @@ class JokeDetailsViewModel(
                         )
                     }
                 }
+
                 is Resource.Loading -> {
                     _state.update { JokeDetailsState(isLoading = true) }
                 }

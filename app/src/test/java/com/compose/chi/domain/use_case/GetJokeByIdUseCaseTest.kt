@@ -5,7 +5,6 @@ import com.compose.chi.domain.repository.JokeRepository
 import com.compose.chi.domain.use_case.GetJokeByIdUseCase
 import io.mockk.coEvery
 import io.mockk.mockk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import okhttp3.ResponseBody.Companion.toResponseBody
@@ -21,7 +20,6 @@ import java.io.IOException
 import okhttp3.MediaType.Companion.toMediaType
 import org.junit.Assert.assertTrue
 
-@ExperimentalCoroutinesApi
 class GetJokeByIdUseCaseTest {
 
     @Mock
@@ -39,7 +37,12 @@ class GetJokeByIdUseCaseTest {
     fun `get joke by id success`() = runTest {
         // Arrange
         val jokeId = "1" // Make sure jokeId is a String
-        val mockJokeDto = JokeDto(id = jokeId.toInt(), punchline = "Test joke", setup = "joke setup", type = "joke type")
+        val mockJokeDto = JokeDto(
+            id = jokeId.toInt(),
+            punchline = "Test joke",
+            setup = "joke setup",
+            type = "joke type"
+        )
 
         `when`(mockRepository.getJokeById(jokeId)).thenReturn(mockJokeDto.toJoke())
 
@@ -54,13 +57,12 @@ class GetJokeByIdUseCaseTest {
     }
 
 
-
-
     @Test
     fun `get joke by id HTTP error`() = runTest {
         // Arrange
         val jokeId = "1"
-        val expectedErrorMessage = "HTTP 404 Response.error()" // Adjust this based on the actual error message
+        val expectedErrorMessage =
+            "HTTP 404 Response.error()" // Adjust this based on the actual error message
         val contentType = "text/plain".toMediaType()
         val errorResponseBody = expectedErrorMessage.toResponseBody(contentType)
         val response: Response<Any> = Response.error(404, errorResponseBody)
@@ -90,7 +92,8 @@ class GetJokeByIdUseCaseTest {
         }
 
         // Act
-        val result = GetJokeByIdUseCase(mockRepository)(jokeId).toList() // Collect the flow into a list
+        val result =
+            GetJokeByIdUseCase(mockRepository)(jokeId).toList() // Collect the flow into a list
 
         // Print the result for debugging
         println("Actual result: $result")
@@ -99,6 +102,9 @@ class GetJokeByIdUseCaseTest {
         assertEquals(2, result.size) // Expect loading and error states
         assertTrue(result[0] is Resource.Loading<Joke>)
         assertTrue(result[1] is Resource.Error<Joke>)
-        assertEquals("Couldn't reach server. Check your internet connection.", (result[1] as Resource.Error<Joke>).message)
+        assertEquals(
+            "Couldn't reach server. Check your internet connection.",
+            (result[1] as Resource.Error<Joke>).message
+        )
     }
 }

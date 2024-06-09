@@ -16,9 +16,9 @@ class GetJokeUseCase(
             emit(Resource.Loading<Joke>())
             val joke = repository.getJoke()
             emit(Resource.Success<Joke>(joke))
-        } catch(e: HttpException) {
+        } catch (e: HttpException) {
             emit(Resource.Error<Joke>(e.localizedMessage ?: "An unexpected error occurred"))
-        } catch(e: IOException) {
+        } catch (e: IOException) {
             emit(Resource.Error<Joke>("Couldn't reach server. Check your internet connection."))
         }
     }

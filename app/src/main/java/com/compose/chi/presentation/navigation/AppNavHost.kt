@@ -42,10 +42,10 @@ fun AppNavHost(
         }
 
         // Screen with a navigation, a navigation inside a nav
-//        navigation(
-//            route = Screen.SecondTabNavigationScreen.route,
-//            startDestination = Screen.TenJokesScreen.route
-//        ) {
+        navigation(
+            route = Screen.SecondTabNavigationScreen.route,
+            startDestination = Screen.TenJokesScreen.route
+        ) {
 
             composable(
                 route = Screen.TenJokesScreen.route
@@ -59,7 +59,7 @@ fun AppNavHost(
                 val jokeDetailsViewModel = viewModel<JokeDetailsViewModel>(factory = JokeDetailsViewModel.Factory)
                 JokeDetailsScreen(navController = navController, viewModel = jokeDetailsViewModel)
             }
-//        }
+        }
 
         // Screen without a navigation
         composable(

@@ -12,8 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
@@ -34,7 +34,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.compose.chi.domain.model.Joke
@@ -65,7 +64,7 @@ fun JokeHomeScreen(
                 onSettingsPressed = onToggleDarkMode
             )
         },
-    ){ paddingValues ->
+    ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -92,7 +91,7 @@ fun JokeHomeScreen(
                     }
                 )
             }
-            if(state.error.isNotBlank()) {
+            if (state.error.isNotBlank()) {
                 Text(
                     text = state.error,
                     color = MaterialTheme.colorScheme.error,
@@ -103,8 +102,8 @@ fun JokeHomeScreen(
                         .align(Alignment.Center)
                 )
             }
-            if(state.isLoading) {
-                JokeHomeScreenContent(joke = null, true,  {}, {}, {})
+            if (state.isLoading) {
+                JokeHomeScreenContent(joke = null, true, {}, {}, {})
             }
         }
     }
@@ -119,7 +118,9 @@ private fun JokeHomeScreenContent(
     onClick10NewJokes: () -> Unit
 ) {
     LazyColumn(
-        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(content_padding)
     ) {
         item {
@@ -130,7 +131,7 @@ private fun JokeHomeScreenContent(
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
 
-            )
+                )
             Column(
                 modifier = Modifier.fillMaxHeight(),
                 verticalArrangement = Arrangement.SpaceBetween
@@ -194,7 +195,7 @@ private fun JokeHomeScreenContent(
 fun JokeHomeScreen() {
     CHITheme {
         val joke = Joke(punchline = "punchline", setup = "setup", type = "default", id = 1)
-        JokeHomeScreenContent(joke = joke, false,  {}, {}, {})
+        JokeHomeScreenContent(joke = joke, false, {}, {}, {})
     }
 }
 
@@ -205,6 +206,6 @@ fun JokeHomeScreenDark() {
         darkTheme = true,
     ) {
         val joke = Joke(punchline = "punchline", setup = "setup", type = "default", id = 1)
-        JokeHomeScreenContent(joke = joke, false,  {}, {}, {})
+        JokeHomeScreenContent(joke = joke, false, {}, {}, {})
     }
 }

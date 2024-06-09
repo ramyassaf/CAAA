@@ -49,7 +49,7 @@ fun AppBottomNavigation(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         if (item.badgeCount > 0) {
                             BadgedBox(badge = {
-                                Badge() {
+                                Badge(containerColor = MaterialTheme.colorScheme.errorContainer) {
                                     Text(
                                         text = item.badgeCount.toString(),
                                         color = if (selected) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onPrimary

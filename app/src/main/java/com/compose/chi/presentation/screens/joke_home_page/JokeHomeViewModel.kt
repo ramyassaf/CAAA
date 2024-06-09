@@ -22,7 +22,7 @@ import kotlin.coroutines.suspendCoroutine
 class JokeHomeViewModel(
     private val getJokeUseCase: GetJokeUseCase,
     private val dao: JokeDao
-): ViewModel() {
+) : ViewModel() {
 
     private val _state = MutableStateFlow(JokeHomeState())
     val state = _state.asStateFlow()
@@ -42,6 +42,7 @@ class JokeHomeViewModel(
                         _state.update { JokeHomeState(joke = result.data) }
                     }
                 }
+
                 is Resource.Error -> {
                     _state.update {
                         JokeHomeState(
@@ -49,6 +50,7 @@ class JokeHomeViewModel(
                         )
                     }
                 }
+
                 is Resource.Loading -> {
                     _state.update { JokeHomeState(isLoading = true) }
                 }
@@ -59,7 +61,7 @@ class JokeHomeViewModel(
     fun toggleLikeJokeInDb(joke: Joke) {
         val isFavBeforeClick = joke.isFavourite
         val jokeCopyFav = joke.copy(isFavourite = !isFavBeforeClick)
-        
+
         viewModelScope.launch {
             _state.update { JokeHomeState(joke = jokeCopyFav) }
 

@@ -9,7 +9,7 @@ import com.compose.chi.data.database.model.JokeEntity
     version = 1,
     exportSchema = false
 )
-abstract class AppDatabase: RoomDatabase() {
+abstract class AppDatabase : RoomDatabase() {
 
     abstract val dao: JokeDao
 

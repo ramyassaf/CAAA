@@ -6,14 +6,14 @@ import com.compose.chi.domain.repository.JokeRepository
 
 class JokeRepositoryImpl(
     private val api: JokeApi
-): JokeRepository {
+) : JokeRepository {
     override suspend fun getJoke(): Joke {
         return api.getJoke().toJoke()
     }
 
     override suspend fun getTenJokes(): List<Joke> {
         var jokesList = mutableListOf<Joke>()
-        api.getTenJokes().forEach{person -> jokesList.add(person.toJoke())}
+        api.getTenJokes().forEach { person -> jokesList.add(person.toJoke()) }
         return jokesList
     }
 

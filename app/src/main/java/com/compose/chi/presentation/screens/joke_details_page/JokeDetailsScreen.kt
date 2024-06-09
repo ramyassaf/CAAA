@@ -12,8 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
@@ -33,7 +33,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.compose.chi.domain.model.Joke
 import com.compose.chi.presentation.navigation.components.AppTopAppBar
@@ -50,7 +49,8 @@ fun JokeDetailsScreen(
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             AppTopAppBar(
@@ -63,9 +63,10 @@ fun JokeDetailsScreen(
                 onSettingsPressed = {}
             )
         },
-    ){ paddingValues ->
+    ) { paddingValues ->
         Box(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
                 .padding(paddingValues)
         ) {
             state.joke?.let { joke ->
@@ -76,7 +77,7 @@ fun JokeDetailsScreen(
                     },
                 )
             }
-            if(state.error.isNotBlank()) {
+            if (state.error.isNotBlank()) {
                 Text(
                     text = state.error,
                     color = MaterialTheme.colorScheme.error,
@@ -87,8 +88,8 @@ fun JokeDetailsScreen(
                         .align(Alignment.Center)
                 )
             }
-            if(state.isLoading) {
-                JokeDetailsScreenContent(joke = null, true, {})
+            if (state.isLoading) {
+                JokeDetailsScreenContent(joke = null, true) {}
             }
         }
     }
@@ -102,7 +103,9 @@ private fun JokeDetailsScreenContent(
     onLikeJoke: () -> Unit,
 ) {
     LazyColumn(
-        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(content_padding)
     ) {
         item {
@@ -114,11 +117,13 @@ private fun JokeDetailsScreenContent(
                 fontWeight = FontWeight.Bold
             )
             Column(
-                modifier = Modifier.fillMaxHeight().fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
-                if(isLoading) {
+                if (isLoading) {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
                 } else {
                     Text(
@@ -141,7 +146,7 @@ private fun JokeDetailsScreenContent(
                     modifier = Modifier.align(Alignment.End)
                 ) {
                     Icon(
-                        imageVector = if(joke?.isFavourite == true)  Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                        imageVector = if (joke?.isFavourite == true) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                         tint = MaterialTheme.colorScheme.error,
                         contentDescription = "Favourite"
                     )
@@ -156,6 +161,6 @@ private fun JokeDetailsScreenContent(
 fun JokeDetailsScreen() {
     CHITheme {
         val joke = Joke(punchline = "punchline", setup = "setup", type = "default", id = 1)
-        JokeDetailsScreenContent(joke = joke, false, {})
+        JokeDetailsScreenContent(joke = joke, false) {}
     }
 }

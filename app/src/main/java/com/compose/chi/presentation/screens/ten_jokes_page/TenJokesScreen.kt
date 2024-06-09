@@ -58,25 +58,26 @@ fun TenJokesScreen(
                 onSettingsPressed = {}
             )
         },
-    ){ paddingValues ->
+    ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            if(state.jokes.isNotEmpty() || state.isLoading) {
-                val ptrState = rememberPullRefreshState(state.isLoading, {viewModel.getTenJokes()}) // 1
+            if (state.jokes.isNotEmpty() || state.isLoading) {
+                val ptrState =
+                    rememberPullRefreshState(state.isLoading, { viewModel.getTenJokes() }) // 1
                 TenJokesScreenContent(
                     jokes = state.jokes,
                     ptrState = ptrState,
                     onSelectItem = {
-                        println("onSelectItem it = ${it.toString()}")
+                        println("onSelectItem it = $it")
                         navController.navigate(Screen.JokeDetails.route + "/${it}")
                     }
                 )
             }
 
-            if(state.error.isNotBlank()) {
+            if (state.error.isNotBlank()) {
                 Text(
                     text = state.error,
                     color = MaterialTheme.colorScheme.error,
@@ -99,10 +100,11 @@ private fun TenJokesScreenContent(
     ptrState: PullRefreshState,
     onSelectItem: (jokeId: Int) -> Unit
 ) {
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .background(MaterialTheme.colorScheme.background)
-        .pullRefresh(ptrState)
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .pullRefresh(ptrState)
     ) { // 2
         LazyColumn(
             state = rememberLazyListState(),
@@ -128,10 +130,11 @@ fun TenJokesScreen() {
     CHITheme {
         val jokes = mutableListOf<Joke>()
         for (i in 1..50) {
-            val joke = Joke(punchline = "punchline $i", setup = "setup $i", type = "default", id = i)
+            val joke =
+                Joke(punchline = "punchline $i", setup = "setup $i", type = "default", id = i)
             jokes.add(joke)
         }
         val ptrState = rememberPullRefreshState(false, {}) // 1
-        TenJokesScreenContent(jokes = jokes, false,  ptrState, {})
+        TenJokesScreenContent(jokes = jokes, false, ptrState) {}
     }
 }

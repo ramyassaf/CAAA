@@ -15,7 +15,7 @@ data class JokeEntity(
 )
 
 fun JokeEntity.toJoke(): Joke {
-    return Joke (
+    return Joke(
         punchline = punchline,
         setup = setup,
         type = type,
@@ -24,7 +24,7 @@ fun JokeEntity.toJoke(): Joke {
 }
 
 fun Joke.toJokeEntity(): JokeEntity {
-    return JokeEntity (
+    return JokeEntity(
         punchline = punchline,
         setup = setup,
         type = type,

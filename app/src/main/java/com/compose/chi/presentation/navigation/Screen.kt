@@ -7,19 +7,21 @@ sealed class Screen(val route: String) {
 
     // Route to first tab screen of the BottomNavigation,
     // Which is a NavGraphBuilder.composable() inside the NavHost
-    object FirstTabScreen: Screen("first_tab")
+    object FirstTabScreen : Screen("first_tab")
 
     // Route to second tab screen of the BottomNavigation,
     // Which is a NavGraphBuilder.navigation() inside the NavHost
-    object SecondTabNavigationScreen: Screen("second_tab")
+    object SecondTabNavigationScreen : Screen("second_tab")
+
     // Route to first screen of NavGraphBuilder.navigation() "second_tab",
     // Which is a NavGraphBuilder.composable() inside the NavGraphBuilder.navigation() "second_tab"
-    object TenJokesScreen: Screen("ten_jokes")
+    object TenJokesScreen : Screen("ten_jokes")
+
     // Route to second screen of NavGraphBuilder.navigation() "second_tab",
     // Which is a NavGraphBuilder.composable() inside the NavGraphBuilder.navigation() "second_tab"
-    object JokeDetails: Screen("joke_details")
+    object JokeDetails : Screen("joke_details")
 
     // Route to third tab screen of the BottomNavigation,
     // Which is a NavGraphBuilder.composable() inside the NavHost
-    object MyFavouriteJokesScreen: Screen("fav_jokes")
+    object MyFavouriteJokesScreen : Screen("fav_jokes")
 }

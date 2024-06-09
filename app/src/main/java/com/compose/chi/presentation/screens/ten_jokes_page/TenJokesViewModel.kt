@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.update
 
 class TenJokesViewModel(
     private val getTenJokesUseCase: GetTenJokesUseCase,
-): ViewModel() {
+) : ViewModel() {
 
     private val _state = MutableStateFlow(TenJokesState())
     val state = _state.asStateFlow()
@@ -34,6 +34,7 @@ class TenJokesViewModel(
                     _allJokes = (result.data ?: emptyList()) + _allJokes
                     _state.update { TenJokesState(jokes = _allJokes) }
                 }
+
                 is Resource.Error -> {
                     _state.update {
                         TenJokesState(
@@ -41,6 +42,7 @@ class TenJokesViewModel(
                         )
                     }
                 }
+
                 is Resource.Loading -> {
                     _state.update { TenJokesState(jokes = _allJokes, isLoading = true) }
                 }

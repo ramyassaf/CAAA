@@ -9,7 +9,7 @@ data class JokeDto(
     val type: String
 ) {
     fun toJoke(): Joke {
-        return Joke (
+        return Joke(
             punchline = punchline,
             setup = setup,
             type = type,

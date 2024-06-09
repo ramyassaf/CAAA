@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 
 class MyFavouriteJokesViewModel(
     private val jokeDao: JokeDao
-): ViewModel() {
+) : ViewModel() {
 
     private val _allLikedJokes = jokeDao.getAllLikedJokes()
 

@@ -22,7 +22,7 @@ interface AppModule {
 
 class AppModuleImpl(
     private val appContext: Context
-): AppModule {
+) : AppModule {
 
     override val jokeApi: JokeApi by lazy {
 
