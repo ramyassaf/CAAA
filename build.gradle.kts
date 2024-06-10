@@ -14,5 +14,5 @@ plugins {
 }
 
 tasks.register("clean", Delete::class) {
-    delete(rootProject.buildFile)
+    delete(layout.buildDirectory)
 }
