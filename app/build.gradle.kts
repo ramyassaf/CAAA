@@ -25,7 +25,10 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
     compileOptions {
@@ -51,46 +54,47 @@ android {
 
 dependencies {
 
-    implementation("androidx.core:core-ktx:1.13.1")
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.22"))
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.1")
-    implementation("androidx.activity:activity-compose:1.9.0")
-    implementation(platform("androidx.compose:compose-bom:2024.05.00"))
-    implementation("androidx.compose.ui:ui:$composeVersion")
-    implementation("androidx.compose.ui:ui-graphics:$composeVersion")
-    implementation("androidx.compose.ui:ui-tooling-preview:$composeVersion")
-    implementation("androidx.compose.material3:material3:1.2.1")
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.kotlin.bom)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.activity.compose)
+    // Compose Bill of Materials (BOM) for dependency versions (helps you to automatically use these latest versions)
+    implementation(libs.androidx.compose.bom)
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.material3)
 
     // Test
-    testImplementation ("junit:junit:4.13.2")
-    androidTestImplementation ("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation ("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2024.05.00"))
-    androidTestImplementation ("androidx.compose.ui:ui-test-junit4:$composeVersion")
-    debugImplementation ("androidx.compose.ui:ui-tooling:$composeVersion")
-    debugImplementation ("androidx.compose.ui:ui-test-manifest:$composeVersion")
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.compose.bom)
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
 
-    testImplementation ("org.mockito:mockito-core:5.0.0")
-    testImplementation ("io.mockk:mockk:1.12.2") // Mockk has better support than Mockito for Kotlin features, including coroutines.
-    testImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockk) // Mockk has better support than Mockito for Kotlin features, including coroutines.
+    testImplementation(libs.kotlinx.coroutines.test)
 
     // Added Compose dependencies
-    implementation ("androidx.navigation:navigation-compose:2.7.7")
-    implementation ("androidx.compose.material:material:$composeVersion")
-    implementation ("androidx.compose.material:material-icons-extended:$composeVersion")
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.material)
+    implementation(libs.androidx.material.icons.extended)
 
     // Life Cycle
-    implementation ("androidx.lifecycle:lifecycle-runtime-compose:$lifecycleVersion")
-    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycleVersion")
-    implementation ("androidx.lifecycle:lifecycle-viewmodel-savedstate:$lifecycleVersion")
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.savedstate)
 
     // Retrofit
-    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation ("com.squareup.okhttp3:okhttp:5.0.0-alpha.2")
-    implementation ("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.2")
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.okhttp)
+    implementation(libs.logging.interceptor)
 
     // Room
-    implementation ("androidx.room:room-ktx:2.5.2")
-    ksp("androidx.room:room-compiler:2.5.2")
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.room.compiler)
 }
