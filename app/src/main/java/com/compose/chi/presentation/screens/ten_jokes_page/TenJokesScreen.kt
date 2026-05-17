@@ -8,16 +8,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.PullRefreshState
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -34,7 +30,7 @@ import com.compose.chi.presentation.navigation.components.AppTopAppBar
 import com.compose.chi.presentation.screens.ten_jokes_page.components.JokeListItem
 import com.compose.chi.presentation.ui.theme.CHITheme
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TenJokesScreen(
     navController: NavController,
@@ -65,11 +61,10 @@ fun TenJokesScreen(
                 .padding(paddingValues)
         ) {
             if (state.jokes.isNotEmpty() || state.isLoading) {
-                val ptrState =
-                    rememberPullRefreshState(state.isLoading, { viewModel.getTenJokes() }) // 1
                 TenJokesScreenContent(
                     jokes = state.jokes,
-                    ptrState = ptrState,
+                    isRefreshing = state.isLoading,
+                    onRefresh = { viewModel.getTenJokes() },
                     onSelectItem = {
                         println("onSelectItem it = $it")
                         navController.navigate(Screen.JokeDetails.route + "/${it}")
@@ -92,20 +87,20 @@ fun TenJokesScreen(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun TenJokesScreenContent(
     jokes: List<Joke>,
-    isLoading: Boolean = false,
-    ptrState: PullRefreshState,
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit,
     onSelectItem: (jokeId: Int) -> Unit
 ) {
-    Box(
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = onRefresh,
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .pullRefresh(ptrState)
-    ) { // 2
+    ) {
         LazyColumn(
             state = rememberLazyListState(),
             modifier = Modifier.fillMaxSize()
@@ -119,11 +114,9 @@ private fun TenJokesScreenContent(
                 )
             }
         }
-        PullRefreshIndicator(isLoading, ptrState, Modifier.align(Alignment.TopCenter)) // 3
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Preview
 @Composable
 fun TenJokesScreen() {
@@ -134,7 +127,11 @@ fun TenJokesScreen() {
                 Joke(punchline = "punchline $i", setup = "setup $i", type = "default", id = i)
             jokes.add(joke)
         }
-        val ptrState = rememberPullRefreshState(false, {}) // 1
-        TenJokesScreenContent(jokes = jokes, false, ptrState) {}
+        TenJokesScreenContent(
+            jokes = jokes,
+            isRefreshing = false,
+            onRefresh = {},
+            onSelectItem = {}
+        )
     }
 }
