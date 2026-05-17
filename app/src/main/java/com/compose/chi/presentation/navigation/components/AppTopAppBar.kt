@@ -6,7 +6,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBarDefaults
@@ -19,8 +20,9 @@ fun AppTopAppBar(
     title: String,
     scrollBehavior: TopAppBarScrollBehavior,
     hasBackButton: Boolean = false,
+    darkTheme: Boolean = false,
     onBackPressed: () -> Unit,
-    onSettingsPressed: () -> Unit
+    onToggleDarkMode: () -> Unit
 ) {
 
     TopAppBar(
@@ -52,11 +54,11 @@ fun AppTopAppBar(
         },
         actions = {
             IconButton(
-                onClick = onSettingsPressed
+                onClick = onToggleDarkMode
             ) {
                 Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = "Settings",
+                    imageVector = if (darkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
+                    contentDescription = if (darkTheme) "Switch to light theme" else "Switch to dark theme",
                     tint = MaterialTheme.colorScheme.onPrimary
                 )
 

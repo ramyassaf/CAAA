@@ -37,7 +37,9 @@ import com.compose.chi.presentation.ui.theme.CHITheme
 @Composable
 fun MyFavouriteJokesScreen(
     navController: NavController,
-    viewModel: MyFavouriteJokesViewModel
+    viewModel: MyFavouriteJokesViewModel,
+    darkTheme: Boolean,
+    onToggleDarkMode: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -51,10 +53,11 @@ fun MyFavouriteJokesScreen(
                 title = "My Favourite Jokes 💖",
                 scrollBehavior = scrollBehavior,
                 hasBackButton = false,
+                darkTheme = darkTheme,
                 onBackPressed = {
                     navController.popBackStack()
                 },
-                onSettingsPressed = {}
+                onToggleDarkMode = onToggleDarkMode
             )
         },
         floatingActionButton = {

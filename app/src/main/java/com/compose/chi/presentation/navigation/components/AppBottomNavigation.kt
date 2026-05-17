@@ -26,7 +26,7 @@ fun AppBottomNavigation(
 ) {
     val backStackEntry = navController.currentBackStackEntryAsState()
     NavigationBar(
-        modifier = Modifier.height(72.dp),
+        modifier = Modifier.height(82.dp),
         containerColor = MaterialTheme.colorScheme.primary,
         tonalElevation = 5.dp,
     ) {

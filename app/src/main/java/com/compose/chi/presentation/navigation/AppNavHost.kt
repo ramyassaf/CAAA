@@ -20,6 +20,7 @@ import com.compose.chi.presentation.screens.ten_jokes_page.TenJokesViewModel
 fun AppNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
+    darkTheme: Boolean,
     onToggleDarkMode: () -> Unit
 ) {
     // Nested Navigation Graph
@@ -37,6 +38,7 @@ fun AppNavHost(
             JokeHomeScreen(
                 navController = navController,
                 viewModel = homeViewModel,
+                darkTheme = darkTheme,
                 onToggleDarkMode = onToggleDarkMode
             )
         }
@@ -51,13 +53,23 @@ fun AppNavHost(
                 route = Screen.TenJokesScreen.route
             ) {
                 val tenJokesViewModel = viewModel<TenJokesViewModel>(factory = TenJokesViewModel.Factory)
-                TenJokesScreen(navController = navController, viewModel = tenJokesViewModel)
+                TenJokesScreen(
+                    navController = navController,
+                    viewModel = tenJokesViewModel,
+                    darkTheme = darkTheme,
+                    onToggleDarkMode = onToggleDarkMode
+                )
             }
             composable(
                 route = Screen.JokeDetails.route + "/{jokeId}"
             ) {
                 val jokeDetailsViewModel = viewModel<JokeDetailsViewModel>(factory = JokeDetailsViewModel.Factory)
-                JokeDetailsScreen(navController = navController, viewModel = jokeDetailsViewModel)
+                JokeDetailsScreen(
+                    navController = navController,
+                    viewModel = jokeDetailsViewModel,
+                    darkTheme = darkTheme,
+                    onToggleDarkMode = onToggleDarkMode
+                )
             }
         }
 
@@ -66,7 +78,12 @@ fun AppNavHost(
             route = Screen.MyFavouriteJokesScreen.route
         ) {
             val myFavouriteJokesViewModel = viewModel<MyFavouriteJokesViewModel>(factory = MyFavouriteJokesViewModel.Factory)
-            MyFavouriteJokesScreen(navController = navController, viewModel = myFavouriteJokesViewModel)
+            MyFavouriteJokesScreen(
+                navController = navController,
+                viewModel = myFavouriteJokesViewModel,
+                darkTheme = darkTheme,
+                onToggleDarkMode = onToggleDarkMode
+            )
         }
     }
 }
