@@ -3,6 +3,7 @@ package com.compose.chi.presentation
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -31,6 +32,7 @@ import com.compose.chi.presentation.ui.theme.CHITheme
 class MainActivity : ComponentActivity(), AnalyticsLogger by AnalyticsLoggerImpl() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 
         // Call AnalyticsLogger Interface function
         registerLifecycleOwner(this)
