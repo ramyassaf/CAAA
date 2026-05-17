@@ -13,8 +13,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.CHI"
-        tools:targetApi="33">
+        android:theme="@style/Theme.CHI">
         <activity
             android:name="com.compose.chi.presentation.MainActivity"
             android:exported="true"
