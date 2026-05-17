@@ -1,6 +1,8 @@
 # CAAA — Clean Architecture Jetpack Compose Android Skeleton
 
 > **Status:** Work in progress. The repository is actively maintained; new features and architectural improvements are added incrementally. See [Roadmap](#roadmap) below.
+>
+> **Recent changes:** see [CHANGELOG.md](CHANGELOG.md) for the history of architectural and toolchain work.
 
 ## What this project is
 
@@ -33,16 +35,18 @@ Cross-cutting concerns (`Resource<T>` sealed class, constants, analytics logger,
 
 | Concern | Choice |
 |---|---|
-| Language | Kotlin |
-| UI | Jetpack Compose, Material 3 |
+| Language | Kotlin 2.3.x |
+| UI | Jetpack Compose (BOM 2026.05.00), Material 3 1.4.x |
+| System UI | Edge-to-edge via `enableEdgeToEdge()`, theme state hoisted through a `LocalDarkTheme` `CompositionLocal` |
 | Navigation | Navigation Compose (single Activity, no Fragments) |
 | Async | Kotlin Coroutines, Flow, StateFlow |
 | Local storage | Room |
 | Networking | Retrofit 2, OkHttp, Gson |
 | DI | Manual (`AppModule` interface + impl, accessed via `ChiApplication`) |
 | Testing | JUnit 4, MockK, `kotlinx-coroutines-test` |
-| Build | Gradle Kotlin DSL with Version Catalogue (`libs.versions.toml`) |
+| Build | Gradle Kotlin DSL + AGP 9.2.x with built-in Kotlin, Version Catalogue (`libs.versions.toml`) |
 | Annotation processing | KSP (Room compiler) |
+| SDK targets | `compileSdk = 36`, `targetSdk = 36`, `minSdk = 24`, JDK 17 |
 
 ## Project structure
 
@@ -77,7 +81,7 @@ The four screens cover the full architectural pipeline:
 - **Joke Details** — fetches a joke by ID using `SavedStateHandle` to retrieve the nav argument; supports liking from the detail view as well.
 - **My Favourite Jokes** — observes the Room database via Flow and displays all liked jokes; supports clearing all favourites.
 
-Bottom navigation, nested navigation graphs, multiple back stacks, and dark/light theme toggle are all implemented.
+Bottom navigation, nested navigation graphs, multiple back stacks, and dark/light theme toggle are all implemented. The theme toggle is wired through a `LocalDarkTheme` `CompositionLocal` so the top app bar can read state and trigger the toggle without each screen having to thread parameters through. The app renders edge-to-edge on Android 15+ (`targetSdk = 36`).
 
 ## Technologies checklist
 
