@@ -43,7 +43,7 @@ class JokeDetailsViewModel(
             when (result) {
                 is Resource.Success -> {
                     result.data?.let { joke ->
-                        // Collect the flow from IsJokeLikedUseCase and consume it's values each time it changes,
+                        // Collect the flow from IsJokeLikedUseCase and consume its values each time it changes,
                         // then update _state with the new isFavourite value
                         isJokeLikedUseCase(joke.id).collect { isLiked ->
                             if (isLiked) {

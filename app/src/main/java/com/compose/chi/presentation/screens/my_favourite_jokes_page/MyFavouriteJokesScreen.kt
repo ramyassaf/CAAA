@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
@@ -80,7 +79,6 @@ fun MyFavouriteJokesScreen(
                 MyFavouriteJokesScreenContent(
                     jokes = state.jokes,
                     onSelectItem = {
-//                        navController.navigate(Screen.JokeDetails.route)
                         navController.navigate(Screen.JokeDetails.route + "/${it}")
                     }
                 )
