@@ -9,7 +9,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemColors
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,14 +36,12 @@ fun AppBottomNavigation(
                 selected = selected,
                 onClick = { onItemClick(item) },
                 label = { Text(text = item.name) },
-                colors = NavigationBarItemColors(
+                colors = NavigationBarItemDefaults.colors(
                     unselectedIconColor = MaterialTheme.colorScheme.onPrimary,
                     unselectedTextColor = MaterialTheme.colorScheme.onPrimary,
                     selectedIconColor = MaterialTheme.colorScheme.primaryContainer,
                     selectedTextColor = MaterialTheme.colorScheme.primaryContainer,
-                    selectedIndicatorColor = Color.Transparent,
-                    disabledIconColor = MaterialTheme.colorScheme.tertiary,
-                    disabledTextColor = MaterialTheme.colorScheme.tertiary,
+                    indicatorColor = Color.Transparent,
                 ),
                 icon = {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {

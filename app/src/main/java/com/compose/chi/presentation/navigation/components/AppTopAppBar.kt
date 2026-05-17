@@ -24,7 +24,6 @@ fun AppTopAppBar(
 ) {
 
     TopAppBar(
-        // TODO: Check if it's a bug in Material3 TopAppBar (Since titleContentColor, navigationIconContentColor, actionIconContentColor are not working)
         // Customize Colors here
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.primary,
