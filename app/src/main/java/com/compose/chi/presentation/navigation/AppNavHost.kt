@@ -20,8 +20,6 @@ import com.compose.chi.presentation.screens.ten_jokes_page.TenJokesViewModel
 fun AppNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
-    darkTheme: Boolean,
-    onToggleDarkMode: () -> Unit
 ) {
     // Nested Navigation Graph
     NavHost(
@@ -38,8 +36,6 @@ fun AppNavHost(
             JokeHomeScreen(
                 navController = navController,
                 viewModel = homeViewModel,
-                darkTheme = darkTheme,
-                onToggleDarkMode = onToggleDarkMode
             )
         }
 
@@ -56,8 +52,6 @@ fun AppNavHost(
                 TenJokesScreen(
                     navController = navController,
                     viewModel = tenJokesViewModel,
-                    darkTheme = darkTheme,
-                    onToggleDarkMode = onToggleDarkMode
                 )
             }
             composable(
@@ -67,8 +61,6 @@ fun AppNavHost(
                 JokeDetailsScreen(
                     navController = navController,
                     viewModel = jokeDetailsViewModel,
-                    darkTheme = darkTheme,
-                    onToggleDarkMode = onToggleDarkMode
                 )
             }
         }
@@ -81,8 +73,6 @@ fun AppNavHost(
             MyFavouriteJokesScreen(
                 navController = navController,
                 viewModel = myFavouriteJokesViewModel,
-                darkTheme = darkTheme,
-                onToggleDarkMode = onToggleDarkMode
             )
         }
     }

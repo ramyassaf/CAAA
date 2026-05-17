@@ -35,8 +35,6 @@ import com.compose.chi.presentation.ui.theme.CHITheme
 fun TenJokesScreen(
     navController: NavController,
     viewModel: TenJokesViewModel,
-    darkTheme: Boolean,
-    onToggleDarkMode: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -50,11 +48,9 @@ fun TenJokesScreen(
                 title = "Random ${state.jokes.count()} Jokes",
                 scrollBehavior = scrollBehavior,
                 hasBackButton = false,
-                darkTheme = darkTheme,
                 onBackPressed = {
                     navController.popBackStack()
                 },
-                onToggleDarkMode = onToggleDarkMode
             )
         },
     ) { paddingValues ->

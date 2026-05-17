@@ -46,8 +46,6 @@ import com.compose.chi.presentation.ui.theme.*
 fun JokeHomeScreen(
     navController: NavController,
     viewModel: JokeHomeViewModel,
-    darkTheme: Boolean,
-    onToggleDarkMode: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -61,9 +59,7 @@ fun JokeHomeScreen(
                 title = "Random Joke",
                 scrollBehavior = scrollBehavior,
                 hasBackButton = false,
-                darkTheme = darkTheme,
                 onBackPressed = {},
-                onToggleDarkMode = onToggleDarkMode
             )
         },
     ) { paddingValues ->

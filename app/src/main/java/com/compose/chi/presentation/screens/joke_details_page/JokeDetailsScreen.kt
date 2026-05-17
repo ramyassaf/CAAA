@@ -44,8 +44,6 @@ import com.compose.chi.presentation.ui.theme.content_padding
 fun JokeDetailsScreen(
     navController: NavController,
     viewModel: JokeDetailsViewModel,
-    darkTheme: Boolean,
-    onToggleDarkMode: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -59,11 +57,9 @@ fun JokeDetailsScreen(
                 title = if (state.joke != null) state.joke!!.punchline else "Loading Joke...",
                 scrollBehavior = scrollBehavior,
                 hasBackButton = true,
-                darkTheme = darkTheme,
                 onBackPressed = {
                     navController.popBackStack()
                 },
-                onToggleDarkMode = onToggleDarkMode
             )
         },
     ) { paddingValues ->
