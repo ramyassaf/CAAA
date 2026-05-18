@@ -19,7 +19,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.rememberNavController
 import com.compose.chi.analytics.AnalyticsLogger
@@ -32,6 +31,7 @@ import com.compose.chi.presentation.screens.my_favourite_jokes_page.MyFavouriteJ
 import com.compose.chi.presentation.ui.theme.CHITheme
 import com.compose.chi.presentation.ui.theme.DarkThemeController
 import com.compose.chi.presentation.ui.theme.LocalDarkTheme
+import org.koin.compose.viewmodel.koinViewModel
 
 class MainActivity : ComponentActivity(), AnalyticsLogger by AnalyticsLoggerImpl() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,7 +54,7 @@ class MainActivity : ComponentActivity(), AnalyticsLogger by AnalyticsLoggerImpl
 
                     // Collect Favourite
                     val myFavouriteJokesViewModel =
-                        viewModel<MyFavouriteJokesViewModel>(factory = MyFavouriteJokesViewModel.Factory)
+                        koinViewModel<MyFavouriteJokesViewModel>()
                     val myFavState by myFavouriteJokesViewModel.state.collectAsState()
 
                     Scaffold(

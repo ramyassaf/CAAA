@@ -15,6 +15,7 @@ import com.compose.chi.presentation.screens.my_favourite_jokes_page.MyFavouriteJ
 import com.compose.chi.presentation.screens.my_favourite_jokes_page.MyFavouriteJokesViewModel
 import com.compose.chi.presentation.screens.ten_jokes_page.TenJokesScreen
 import com.compose.chi.presentation.screens.ten_jokes_page.TenJokesViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun AppNavHost(
@@ -32,7 +33,7 @@ fun AppNavHost(
         composable(
             route = Screen.FirstTabScreen.route
         ) {
-            val homeViewModel = viewModel<JokeHomeViewModel>(factory = JokeHomeViewModel.Factory)
+            val homeViewModel = koinViewModel<JokeHomeViewModel>()
             JokeHomeScreen(
                 navController = navController,
                 viewModel = homeViewModel,
@@ -48,7 +49,7 @@ fun AppNavHost(
             composable(
                 route = Screen.TenJokesScreen.route
             ) {
-                val tenJokesViewModel = viewModel<TenJokesViewModel>(factory = TenJokesViewModel.Factory)
+                val tenJokesViewModel = koinViewModel<TenJokesViewModel>()
                 TenJokesScreen(
                     navController = navController,
                     viewModel = tenJokesViewModel,
@@ -69,7 +70,7 @@ fun AppNavHost(
         composable(
             route = Screen.MyFavouriteJokesScreen.route
         ) {
-            val myFavouriteJokesViewModel = viewModel<MyFavouriteJokesViewModel>(factory = MyFavouriteJokesViewModel.Factory)
+            val myFavouriteJokesViewModel = koinViewModel<MyFavouriteJokesViewModel>()
             MyFavouriteJokesScreen(
                 navController = navController,
                 viewModel = myFavouriteJokesViewModel,
