@@ -2,7 +2,6 @@ package com.compose.chi.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -58,7 +57,7 @@ fun AppNavHost(
             composable(
                 route = Screen.JokeDetails.route + "/{jokeId}"
             ) {
-                val jokeDetailsViewModel = viewModel<JokeDetailsViewModel>(factory = JokeDetailsViewModel.Factory)
+                val jokeDetailsViewModel = koinViewModel<JokeDetailsViewModel>()
                 JokeDetailsScreen(
                     navController = navController,
                     viewModel = jokeDetailsViewModel,

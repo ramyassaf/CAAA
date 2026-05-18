@@ -2,15 +2,12 @@ package com.compose.chi.presentation.screens.joke_details_page
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.compose.chi.ChiApplication
 import com.compose.chi.common.Resource
 import com.compose.chi.domain.model.Joke
 import com.compose.chi.domain.use_case.GetJokeByIdUseCase
 import com.compose.chi.domain.use_case.IsJokeLikedUseCase
 import com.compose.chi.domain.use_case.UpsertJokeUseCase
-import com.compose.chi.presentation.helpers.viewModelFactory
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -79,20 +76,6 @@ class JokeDetailsViewModel(
             _state.update { JokeDetailsState(joke = jokeCopyFav) }
 
             upsertJokeUseCase(jokeCopyFav)
-        }
-    }
-
-    // ViewModel Factory in a companion object
-    companion object {
-        val Factory: ViewModelProvider.Factory = viewModelFactory {
-            ChiApplication.appModule.jokeRepository.let { jokeRepo ->
-                JokeDetailsViewModel(
-                    it,
-                    GetJokeByIdUseCase(jokeRepo),
-                    IsJokeLikedUseCase(jokeRepo),
-                    UpsertJokeUseCase(jokeRepo)
-                )
-            }
         }
     }
 }
