@@ -27,3 +27,19 @@ All notable changes to CAAA are documented here.
 #### Changed
 - Kotlin 2.3.21, AGP 9.2.x (built-in Kotlin plugin), Compose BOM 2026.05.00 (Compose 1.11.x / Material 3 1.4.x), `compileSdk` 36, JDK 17.
 - Versions centralized in `gradle/libs.versions.toml`.
+
+### 3 - Koin migration
+
+#### Added
+- Koin dependencies through the version catalog.
+- `KoinModules.kt` for app dependency wiring.
+- Koin startup in `ChiApplication`.
+
+#### Changed
+- Compose ViewModel retrieval now uses Koin.
+- `JokeDetailsViewModel` keeps `SavedStateHandle` support through navigation arguments.
+
+#### Removed
+- Manual `AppModule` dependency wiring.
+- ViewModel companion factories.
+- `ViewModelFactoryHelper.kt`.
