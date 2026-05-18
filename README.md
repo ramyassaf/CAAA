@@ -27,7 +27,7 @@ Cross-cutting concerns (`Resource<T>` sealed class, constants, analytics logger,
 - **Dependency inversion is real, not nominal.** ViewModels depend on use cases; use cases depend on the repository interface; the repository implementation lives in the data layer behind that interface. The domain layer literally cannot import from data.
 - **DTOs, entities, and domain models are distinct.** `JokeDto` (network), `JokeEntity` (Room), and `Joke` (domain) are separate classes with explicit mapping functions kept in the data layer. The domain never sees a `@SerializedName` or an `@Entity`.
 - **Use cases are minimal and single-purpose.** Each use case exposes exactly one `operator fun invoke` and orchestrates a single piece of business logic. The codebase currently includes seven: `GetJokeUseCase`, `GetTenJokesUseCase`, `GetJokeByIdUseCase`, `GetLikedJokesUseCase`, `IsJokeLikedUseCase`, `UpsertJokeUseCase`, `DeleteAllJokesUseCase`.
-- **Manual DI is intentional.** The `AppModule` interface plus `AppModuleImpl` implementation, accessed through `ChiApplication.appModule`, exists to make the dependency-inversion principle visible to readers. The manual approach is intentionally kept explicit as a teaching artifact, while a future modernization step already planned for the repository will migrate the project toward Koin-based dependency injection.
+- **Koin dependency injection.** The repository uses Koin for dependency wiring while preserving the same Clean Architecture boundaries and constructor-injection patterns established during the earlier manual-DI implementation.
 
 ## Tech stack
 
@@ -39,7 +39,7 @@ Cross-cutting concerns (`Resource<T>` sealed class, constants, analytics logger,
 | Async | Kotlin Coroutines, Flow, StateFlow |
 | Local storage | Room |
 | Networking | Retrofit 2, OkHttp, Gson |
-| DI | Manual (`AppModule` interface + impl, accessed via `ChiApplication`) — Koin migration planned |
+| DI | Koin |
 | Testing | JUnit 4, MockK, `kotlinx-coroutines-test` |
 | Build | Gradle Kotlin DSL with Version Catalogue (`libs.versions.toml`) |
 | Annotation processing | KSP (Room compiler) |
@@ -54,80 +54,76 @@ app/src/main/java/com/compose/chi/
 │   ├── database/     # AppDatabase, JokeDao, JokeEntity
 │   ├── remote/       # JokeApi (Retrofit), JokeDto
 │   └── repository/   # JokeRepositoryImpl
-├── di/               # AppModule interface + AppModuleImpl
+├── di/               # KoinModules.kt
 ├── domain/
 │   ├── model/        # Joke
 │   ├── repository/   # JokeRepository (interface only)
 │   └── use_case/     # 7 use cases
 ├── presentation/
-│   ├── helpers/      # ViewModelFactoryHelper
 │   ├── navigation/   # AppNavHost, Screen, bottom nav components
 │   ├── screens/      # 4 screens: home, ten-jokes, joke-details, my-favourites
 │   └── ui/theme/     # Compose theme, colors, typography, shapes
 ├── ChiApplication.kt
 └── MainActivity.kt
-```
+````
 
 ## Features implemented
 
 The four screens cover the full architectural pipeline:
 
-- **Random Joke** — fetches one joke from the network; tappable heart icon persists the joke to Room as a favourite. The favourite state is reactively observed from the database via Flow.
-- **Ten Jokes** — fetches a list of ten jokes; tappable items navigate to the detail screen with the joke ID passed as a nav argument.
-- **Joke Details** — fetches a joke by ID using `SavedStateHandle` to retrieve the nav argument; supports liking from the detail view as well.
-- **My Favourite Jokes** — observes the Room database via Flow and displays all liked jokes; supports clearing all favourites.
+* **Random Joke** — fetches one joke from the network; tappable heart icon persists the joke to Room as a favourite. The favourite state is reactively observed from the database via Flow.
+* **Ten Jokes** — fetches a list of ten jokes; tappable items navigate to the detail screen with the joke ID passed as a nav argument.
+* **Joke Details** — fetches a joke by ID using `SavedStateHandle` to retrieve the nav argument; supports liking from the detail view as well.
+* **My Favourite Jokes** — observes the Room database via Flow and displays all liked jokes; supports clearing all favourites.
 
 Bottom navigation, nested navigation graphs, multiple back stacks, and dark/light theme toggle are all implemented.
 
 ## Technologies checklist
 
-| #  | Item | Status |
-|----|---|:---:|
-| 1  | Kotlin | ✅ |
-| 2  | Clean Architecture (3 layers) | ✅ |
-| 3  | MVVM | ✅ |
-| 4  | Jetpack Compose + Navigation (single Activity, no Fragments) | ✅ |
-| 5  | REST API with OkHttp + Retrofit2 | ✅ |
-| 6  | Database caching with Room (favourites persisted) | ✅ |
-| 7  | Use cases (Dependency Inversion impl for unit testing) | ✅ |
-| 8  | Kotlin Coroutines + Flow + StateFlow | ✅ |
-| 9  | Manual Dependency Injection | ✅ |
-| 10 | Dependency management with Gradle Kotlin DSL + Version Catalogue | ✅ |
-| 11 | Kotlin 2.x + Compose modernization | ✅ |
-| 12 | Unit Tests (sample) | ✅ |
-| 13 | Network Connectivity monitoring | ⏳ |
-| 14 | DataStore (replacement for SharedPreferences) | ⏳ |
-| 15 | MockWebServer for repository/API integration tests | ⏳ |
-| 16 | Offline-first repository pattern (cache + network) | ⏳ |
-| 17 | Full unit test coverage across all use cases and ViewModels | ⏳ |
+| #  | Item                                                             | Status |
+| -- | ---------------------------------------------------------------- | :----: |
+| 1  | Kotlin                                                           |    ✅   |
+| 2  | Clean Architecture (3 layers)                                    |    ✅   |
+| 3  | MVVM                                                             |    ✅   |
+| 4  | Jetpack Compose + Navigation (single Activity, no Fragments)     |    ✅   |
+| 5  | REST API with OkHttp + Retrofit2                                 |    ✅   |
+| 6  | Database caching with Room (favourites persisted)                |    ✅   |
+| 7  | Use cases (Dependency Inversion impl for unit testing)           |    ✅   |
+| 8  | Kotlin Coroutines + Flow + StateFlow                             |    ✅   |
+| 9  | Koin Dependency Injection                                        |    ✅   |
+| 10 | Dependency management with Gradle Kotlin DSL + Version Catalogue |    ✅   |
+| 11 | Kotlin 2.x + Compose modernization                               |    ✅   |
+| 12 | Unit Tests (sample)                                              |    ✅   |
+| 13 | Network Connectivity monitoring                                  |    ⏳   |
+| 14 | DataStore (replacement for SharedPreferences)                    |    ⏳   |
+| 15 | MockWebServer for repository/API integration tests               |    ⏳   |
+| 16 | Offline-first repository pattern (cache + network)               |    ⏳   |
+| 17 | Full unit test coverage across all use cases and ViewModels      |    ⏳   |
 
 ## Roadmap
 
 The repository is actively maintained. Planned additions:
 
-- **Koin dependency injection migration** — Replace the intentionally explicit manual DI implementation with Koin while preserving the current Clean Architecture boundaries and single-module structure.
+* **Expanded test coverage** — Tests for every use case (happy path + error paths), ViewModel Flow testing using Turbine, and repository integration tests using `Room.inMemoryDatabaseBuilder`.
 
-- **Expanded test coverage** — Tests for every use case (happy path + error paths), ViewModel Flow testing using Turbine, and repository integration tests using `Room.inMemoryDatabaseBuilder`.
+* **Future modularization** — Gradual migration toward dedicated `domain`, `data`, and `app` modules as preparation for future multiplatform support.
 
-- **Future modularization** — Gradual migration toward dedicated `domain`, `data`, and `app` modules as preparation for future multiplatform support.
+* **Offline-first repository pattern** — Refactor repository flows to emit cached data first, then fetch from network, persist, and re-emit fresh values.
 
-- **Offline-first repository pattern** — Refactor repository flows to emit cached data first, then fetch from network, persist, and re-emit fresh values.
+* **MockWebServer integration** — End-to-end tests of the data layer against a controllable fake HTTP server.
 
-- **MockWebServer integration** — End-to-end tests of the data layer against a controllable fake HTTP server.
+* **DataStore** — Replace any future SharedPreferences usage with DataStore.
 
-- **DataStore** — Replace any future SharedPreferences usage with DataStore.
+* **Network connectivity monitoring** — Expose connectivity state as a Flow consumable by ViewModels for offline UX handling.
 
-- **Network connectivity monitoring** — Expose connectivity state as a Flow consumable by ViewModels for offline UX handling.
-
-- **Long-term Kotlin Multiplatform exploration** — Evaluate migration of the architecture toward shared business and data layers.
+* **Long-term Kotlin Multiplatform exploration** — Evaluate migration of the architecture toward shared business and data layers.
 
 ## Considered
 
 The following are intentionally not included to keep the architectural focus clear:
 
-- Firebase (FCM, Analytics, Crashlytics)
-- Multiple unrelated features (the project remains single-feature by design)
-- Production-grade DI framework usage in the current implementation — the repository intentionally keeps manual DI visible for educational purposes, although migration toward Koin is already planned as part of the modernization roadmap.
+* Firebase (FCM, Analytics, Crashlytics)
+* Multiple unrelated features (the project remains single-feature by design)
 
 ## About
 
