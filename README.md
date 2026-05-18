@@ -1,8 +1,6 @@
 # CAAA — Clean Architecture Jetpack Compose Android Skeleton
 
-> **Status:** Work in progress. The repository is actively maintained; new features and architectural improvements are added incrementally. See [Roadmap](#roadmap) below.
->
-> **Recent changes:** see [CHANGELOG.md](CHANGELOG.md) for the history of architectural and toolchain work.
+> **Status:** Actively maintained and continuously modernized. The repository evolves incrementally with architecture, tooling, and testing improvements focused on modern Android development practices. See [Roadmap](#roadmap) below.
 
 ## What this project is
 
@@ -29,24 +27,22 @@ Cross-cutting concerns (`Resource<T>` sealed class, constants, analytics logger,
 - **Dependency inversion is real, not nominal.** ViewModels depend on use cases; use cases depend on the repository interface; the repository implementation lives in the data layer behind that interface. The domain layer literally cannot import from data.
 - **DTOs, entities, and domain models are distinct.** `JokeDto` (network), `JokeEntity` (Room), and `Joke` (domain) are separate classes with explicit mapping functions kept in the data layer. The domain never sees a `@SerializedName` or an `@Entity`.
 - **Use cases are minimal and single-purpose.** Each use case exposes exactly one `operator fun invoke` and orchestrates a single piece of business logic. The codebase currently includes seven: `GetJokeUseCase`, `GetTenJokesUseCase`, `GetJokeByIdUseCase`, `GetLikedJokesUseCase`, `IsJokeLikedUseCase`, `UpsertJokeUseCase`, `DeleteAllJokesUseCase`.
-- **Manual DI is intentional.** The `AppModule` interface plus `AppModuleImpl` implementation, accessed through `ChiApplication.appModule`, exists to make the dependency-inversion principle visible to readers. The same wiring would normally be done with Hilt or Koin in a production app; the manual approach is a demonstration choice.
+- **Manual DI is intentional.** The `AppModule` interface plus `AppModuleImpl` implementation, accessed through `ChiApplication.appModule`, exists to make the dependency-inversion principle visible to readers. The manual approach is intentionally kept explicit as a teaching artifact, while a future modernization step already planned for the repository will migrate the project toward Koin-based dependency injection.
 
 ## Tech stack
 
 | Concern | Choice |
 |---|---|
-| Language | Kotlin 2.3.x |
-| UI | Jetpack Compose (BOM 2026.05.00), Material 3 1.4.x |
-| System UI | Edge-to-edge via `enableEdgeToEdge()`, theme state hoisted through a `LocalDarkTheme` `CompositionLocal` |
+| Language | Kotlin |
+| UI | Jetpack Compose, Material 3 |
 | Navigation | Navigation Compose (single Activity, no Fragments) |
 | Async | Kotlin Coroutines, Flow, StateFlow |
 | Local storage | Room |
 | Networking | Retrofit 2, OkHttp, Gson |
-| DI | Manual (`AppModule` interface + impl, accessed via `ChiApplication`) |
+| DI | Manual (`AppModule` interface + impl, accessed via `ChiApplication`) — Koin migration planned |
 | Testing | JUnit 4, MockK, `kotlinx-coroutines-test` |
-| Build | Gradle Kotlin DSL + AGP 9.2.x with built-in Kotlin, Version Catalogue (`libs.versions.toml`) |
+| Build | Gradle Kotlin DSL with Version Catalogue (`libs.versions.toml`) |
 | Annotation processing | KSP (Room compiler) |
-| SDK targets | `compileSdk = 36`, `targetSdk = 36`, `minSdk = 24`, JDK 17 |
 
 ## Project structure
 
@@ -81,46 +77,57 @@ The four screens cover the full architectural pipeline:
 - **Joke Details** — fetches a joke by ID using `SavedStateHandle` to retrieve the nav argument; supports liking from the detail view as well.
 - **My Favourite Jokes** — observes the Room database via Flow and displays all liked jokes; supports clearing all favourites.
 
-Bottom navigation, nested navigation graphs, multiple back stacks, and dark/light theme toggle are all implemented. The theme toggle is wired through a `LocalDarkTheme` `CompositionLocal` so the top app bar can read state and trigger the toggle without each screen having to thread parameters through. The app renders edge-to-edge on Android 15+ (`targetSdk = 36`).
+Bottom navigation, nested navigation graphs, multiple back stacks, and dark/light theme toggle are all implemented.
 
 ## Technologies checklist
 
-| # | Item | Status |
-|---|---|:---:|
-| 1 | Kotlin | ✅ |
-| 2 | Clean Architecture (3 layers) | ✅ |
-| 3 | MVVM | ✅ |
-| 4 | Jetpack Compose + Navigation (single Activity, no Fragments) | ✅ |
-| 5 | REST API with OkHttp + Retrofit2 | ✅ |
-| 6 | Database caching with Room (favourites persisted) | ✅ |
-| 7 | Use cases (Dependency Inversion impl for unit testing) | ✅ |
-| 8 | Kotlin Coroutines + Flow + StateFlow | ✅ |
-| 9 | Manual Dependency Injection | ✅ |
+| #  | Item | Status |
+|----|---|:---:|
+| 1  | Kotlin | ✅ |
+| 2  | Clean Architecture (3 layers) | ✅ |
+| 3  | MVVM | ✅ |
+| 4  | Jetpack Compose + Navigation (single Activity, no Fragments) | ✅ |
+| 5  | REST API with OkHttp + Retrofit2 | ✅ |
+| 6  | Database caching with Room (favourites persisted) | ✅ |
+| 7  | Use cases (Dependency Inversion impl for unit testing) | ✅ |
+| 8  | Kotlin Coroutines + Flow + StateFlow | ✅ |
+| 9  | Manual Dependency Injection | ✅ |
 | 10 | Dependency management with Gradle Kotlin DSL + Version Catalogue | ✅ |
-| 11 | Unit Tests (sample) | ✅ |
-| 12 | Network Connectivity monitoring | ⏳ |
-| 13 | DataStore (replacement for SharedPreferences) | ⏳ |
-| 14 | MockWebServer for repository/API integration tests | ⏳ |
-| 15 | Offline-first repository pattern (cache + network) | ⏳ |
-| 16 | Full unit test coverage across all use cases and ViewModels | ⏳ |
+| 11 | Kotlin 2.x + Compose modernization | ✅ |
+| 12 | Unit Tests (sample) | ✅ |
+| 13 | Network Connectivity monitoring | ⏳ |
+| 14 | DataStore (replacement for SharedPreferences) | ⏳ |
+| 15 | MockWebServer for repository/API integration tests | ⏳ |
+| 16 | Offline-first repository pattern (cache + network) | ⏳ |
+| 17 | Full unit test coverage across all use cases and ViewModels | ⏳ |
 
 ## Roadmap
 
 The repository is actively maintained. Planned additions:
 
-- **Expanded test coverage** — Tests for every use case (happy path + error paths), at least one ViewModel test using Turbine for Flow assertions, and a repository integration test using `Room.inMemoryDatabaseBuilder`.
-- **Offline-first repository pattern** — Refactor remote use cases to emit cached data first, then fetch from network, persist, and re-emit the fresh value. This is the canonical Clean Architecture data-layer pattern and currently the most visible gap.
+- **Koin dependency injection migration** — Replace the intentionally explicit manual DI implementation with Koin while preserving the current Clean Architecture boundaries and single-module structure.
+
+- **Expanded test coverage** — Tests for every use case (happy path + error paths), ViewModel Flow testing using Turbine, and repository integration tests using `Room.inMemoryDatabaseBuilder`.
+
+- **Future modularization** — Gradual migration toward dedicated `domain`, `data`, and `app` modules as preparation for future multiplatform support.
+
+- **Offline-first repository pattern** — Refactor repository flows to emit cached data first, then fetch from network, persist, and re-emit fresh values.
+
 - **MockWebServer integration** — End-to-end tests of the data layer against a controllable fake HTTP server.
-- **DataStore** — Replace any future SharedPreferences needs with DataStore (typed key-value or Proto).
+
+- **DataStore** — Replace any future SharedPreferences usage with DataStore.
+
 - **Network connectivity monitoring** — Expose connectivity state as a Flow consumable by ViewModels for offline UX handling.
 
-## Considered but out of scope
+- **Long-term Kotlin Multiplatform exploration** — Evaluate migration of the architecture toward shared business and data layers.
+
+## Considered
 
 The following are intentionally not included to keep the architectural focus clear:
 
 - Firebase (FCM, Analytics, Crashlytics)
 - Multiple unrelated features (the project remains single-feature by design)
-- Production-grade DI framework (Hilt/Koin) — the manual DI is a demonstration choice, see [Architectural decisions](#key-architectural-decisions)
+- Production-grade DI framework usage in the current implementation — the repository intentionally keeps manual DI visible for educational purposes, although migration toward Koin is already planned as part of the modernization roadmap.
 
 ## About
 
