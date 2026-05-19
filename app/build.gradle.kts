@@ -59,8 +59,12 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
+    // Compose UI test deps removed alongside the generated ExampleInstrumentedTest —
+    // no remaining androidTest consumer, and they pulled a strict coroutines BOM that
+    // forced version conflicts. kotlinx-coroutines-test was likewise dropped: the DAO
+    // tests use runBlocking from coroutines-core (already on the classpath), since
+    // androidx test deps publish a strict kotlinx-coroutines-bom 1.9.0 constraint
+    // that makes runTest 1.11 fail at runtime with a NoSuchMethodError on runBlockingK.
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
