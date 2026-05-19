@@ -102,30 +102,30 @@ class JokeRepositoryImplTest {
     // --- Local --------------------------------------------------------------
 
     @Test
-    fun `getLikedJokes maps DAO entities into domain jokes`() = runTest {
+    fun `observeLikedJokes maps DAO entities into domain jokes`() = runTest {
         val entities = listOf(
             TestJokes.jokeEntity1Favourite,
             TestJokes.jokeEntity2Favourite
         )
-        every { dao.getAllLikedJokes() } returns flowOf(entities)
+        every { dao.observeAllLikedJokes() } returns flowOf(entities)
 
-        repository.getLikedJokes().test {
+        repository.observeLikedJokes().test {
             val emitted = awaitItem()
             assertEquals(entities.map { it.toJoke() }, emitted)
             awaitComplete()
         }
-        verify(exactly = 1) { dao.getAllLikedJokes() }
+        verify(exactly = 1) { dao.observeAllLikedJokes() }
     }
 
     @Test
-    fun `getLikedJokes preserves isFavourite true on every emitted joke`() = runTest {
+    fun `observeLikedJokes preserves isFavourite true on every emitted joke`() = runTest {
         val entities = listOf(
             TestJokes.jokeEntity1Favourite,
             TestJokes.jokeEntity2Favourite
         )
-        every { dao.getAllLikedJokes() } returns flowOf(entities)
+        every { dao.observeAllLikedJokes() } returns flowOf(entities)
 
-        repository.getLikedJokes().test {
+        repository.observeLikedJokes().test {
             val emitted = awaitItem()
             assertTrue("every liked joke must report isFavourite = true",
                 emitted.isNotEmpty() && emitted.all { it.isFavourite })
@@ -134,15 +134,15 @@ class JokeRepositoryImplTest {
     }
 
     @Test
-    fun `isJokeLiked returns the DAO flow for the requested id`() = runTest {
+    fun `observeJokeLikedStatus returns the DAO flow for the requested id`() = runTest {
         val jokeId = 5
-        every { dao.isFavoriteJoke(jokeId) } returns flowOf(true)
+        every { dao.observeFavoriteJoke(jokeId) } returns flowOf(true)
 
-        repository.isJokeLiked(jokeId).test {
+        repository.observeJokeLikedStatus(jokeId).test {
             assertEquals(true, awaitItem())
             awaitComplete()
         }
-        verify(exactly = 1) { dao.isFavoriteJoke(jokeId) }
+        verify(exactly = 1) { dao.observeFavoriteJoke(jokeId) }
     }
 
     @Test

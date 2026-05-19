@@ -59,9 +59,9 @@ class FakeJokeRepository : JokeRepository {
         return jokeByIdResult
     }
 
-    override fun getLikedJokes(): Flow<List<Joke>> = likedJokes.asStateFlow()
+    override fun observeLikedJokes(): Flow<List<Joke>> = likedJokes.asStateFlow()
 
-    override fun isJokeLiked(jokeId: Int): Flow<Boolean> =
+    override fun observeJokeLikedStatus(jokeId: Int): Flow<Boolean> =
         likedStatuses.asStateFlow().map { it[jokeId] ?: false }
 
     override suspend fun upsertJoke(joke: Joke) {

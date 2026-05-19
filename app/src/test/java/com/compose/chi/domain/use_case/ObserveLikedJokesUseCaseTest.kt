@@ -13,16 +13,16 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class GetLikedJokesUseCaseTest {
+class ObserveLikedJokesUseCaseTest {
 
     @Test
     fun `returns the repository liked jokes flow`() = runTest {
         val likedJokes = listOf(TestJokes.joke1Favourite, TestJokes.joke2Favourite)
         val repository: JokeRepository = mockk {
-            every { getLikedJokes() } returns flowOf(likedJokes)
+            every { observeLikedJokes() } returns flowOf(likedJokes)
         }
 
-        GetLikedJokesUseCase(repository)().test {
+        ObserveLikedJokesUseCase(repository)().test {
             assertEquals(likedJokes, awaitItem())
             awaitComplete()
         }
@@ -32,10 +32,10 @@ class GetLikedJokesUseCaseTest {
     fun `propagates errors from the repository flow`() = runTest {
         val failure = IllegalStateException("db unavailable")
         val repository: JokeRepository = mockk {
-            every { getLikedJokes() } returns flow<List<Joke>> { throw failure }
+            every { observeLikedJokes() } returns flow<List<Joke>> { throw failure }
         }
 
-        GetLikedJokesUseCase(repository)().test {
+        ObserveLikedJokesUseCase(repository)().test {
             assertTrue(awaitError() is IllegalStateException)
         }
     }

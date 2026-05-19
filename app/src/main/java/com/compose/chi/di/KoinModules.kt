@@ -9,9 +9,9 @@ import com.compose.chi.domain.repository.JokeRepository
 import com.compose.chi.domain.use_case.DeleteAllJokesUseCase
 import com.compose.chi.domain.use_case.GetJokeByIdUseCase
 import com.compose.chi.domain.use_case.GetJokeUseCase
-import com.compose.chi.domain.use_case.GetLikedJokesUseCase
+import com.compose.chi.domain.use_case.ObserveLikedJokesUseCase
 import com.compose.chi.domain.use_case.GetTenJokesUseCase
-import com.compose.chi.domain.use_case.IsJokeLikedUseCase
+import com.compose.chi.domain.use_case.ObserveJokeLikedStatusUseCase
 import com.compose.chi.domain.use_case.UpsertJokeUseCase
 import com.compose.chi.presentation.screens.joke_details_page.JokeDetailsViewModel
 import com.compose.chi.presentation.screens.joke_home_page.JokeHomeViewModel
@@ -70,8 +70,8 @@ val appKoinModule = module {
     factory { GetJokeUseCase(get()) }
     factory { GetTenJokesUseCase(get()) }
     factory { GetJokeByIdUseCase(get()) }
-    factory { GetLikedJokesUseCase(get()) }
-    factory { IsJokeLikedUseCase(get()) }
+    factory { ObserveLikedJokesUseCase(get()) }
+    factory { ObserveJokeLikedStatusUseCase(get()) }
     factory { UpsertJokeUseCase(get()) }
     factory { DeleteAllJokesUseCase(get()) }
 

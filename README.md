@@ -26,7 +26,7 @@ Cross-cutting concerns (`Resource<T>` sealed class, constants, analytics logger,
 
 - **Dependency inversion is real, not nominal.** ViewModels depend on use cases; use cases depend on the repository interface; the repository implementation lives in the data layer behind that interface. The domain layer literally cannot import from data.
 - **DTOs, entities, and domain models are distinct.** `JokeDto` (network), `JokeEntity` (Room), and `Joke` (domain) are separate classes with explicit mapping functions kept in the data layer. The domain never sees a `@SerializedName` or an `@Entity`.
-- **Use cases are minimal and single-purpose.** Each use case exposes exactly one `operator fun invoke` and orchestrates a single piece of business logic. The codebase currently includes seven: `GetJokeUseCase`, `GetTenJokesUseCase`, `GetJokeByIdUseCase`, `GetLikedJokesUseCase`, `IsJokeLikedUseCase`, `UpsertJokeUseCase`, `DeleteAllJokesUseCase`.
+- **Use cases are minimal and single-purpose.** Each use case exposes exactly one `operator fun invoke` and orchestrates a single piece of business logic. The codebase currently includes seven: `GetJokeUseCase`, `GetTenJokesUseCase`, `GetJokeByIdUseCase`, `ObserveLikedJokesUseCase`, `ObserveJokeLikedStatusUseCase`, `UpsertJokeUseCase`, `DeleteAllJokesUseCase`.
 - **Koin dependency injection.** The repository uses Koin for dependency wiring while preserving the same Clean Architecture boundaries and constructor-injection patterns established during the earlier manual-DI implementation.
 
 ## Tech stack

@@ -60,29 +60,29 @@ class JokeDaoTest {
     }
 
     @Test
-    fun getAllLikedJokes_returns_only_jokes_where_isFavourite_is_true() = runBlocking {
+    fun observeAllLikedJokes_returns_only_jokes_where_isFavourite_is_true() = runBlocking {
         dao.upsertJoke(likedJoke)
         dao.upsertJoke(notLikedJoke)
 
-        val liked = dao.getAllLikedJokes().first()
+        val liked = dao.observeAllLikedJokes().first()
         assertEquals(listOf(likedJoke), liked)
     }
 
     @Test
-    fun isFavoriteJoke_emits_true_for_liked_joke() = runBlocking {
+    fun observeFavoriteJoke_emits_true_for_liked_joke() = runBlocking {
         dao.upsertJoke(likedJoke)
 
-        assertTrue(dao.isFavoriteJoke(likedJoke.id).first())
+        assertTrue(dao.observeFavoriteJoke(likedJoke.id).first())
     }
 
     @Test
-    fun isFavoriteJoke_emits_false_for_non_liked_or_missing_joke() = runBlocking {
+    fun observeFavoriteJoke_emits_false_for_non_liked_or_missing_joke() = runBlocking {
         dao.upsertJoke(notLikedJoke)
 
         assertFalse("not-liked joke must not register as favourite",
-            dao.isFavoriteJoke(notLikedJoke.id).first())
+            dao.observeFavoriteJoke(notLikedJoke.id).first())
         assertFalse("missing joke must not register as favourite",
-            dao.isFavoriteJoke(jokeId = 999).first())
+            dao.observeFavoriteJoke(jokeId = 999).first())
     }
 
     @Test

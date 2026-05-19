@@ -4,7 +4,7 @@ package com.compose.chi.presentation.screens.joke_home_page
 
 import app.cash.turbine.test
 import com.compose.chi.domain.use_case.GetJokeUseCase
-import com.compose.chi.domain.use_case.IsJokeLikedUseCase
+import com.compose.chi.domain.use_case.ObserveJokeLikedStatusUseCase
 import com.compose.chi.domain.use_case.UpsertJokeUseCase
 import com.compose.chi.testing.FakeJokeRepository
 import com.compose.chi.testing.MainDispatcherRule
@@ -28,7 +28,7 @@ class JokeHomeViewModelTest {
 
     private fun viewModel(repo: FakeJokeRepository) = JokeHomeViewModel(
         getJokeUseCase = GetJokeUseCase(repo),
-        isJokeLikedUseCase = IsJokeLikedUseCase(repo),
+        observeJokeLikedStatusUseCase = ObserveJokeLikedStatusUseCase(repo),
         upsertJokeUseCase = UpsertJokeUseCase(repo)
     )
 
@@ -47,7 +47,7 @@ class JokeHomeViewModelTest {
         }
 
     @Test
-    fun `success state reflects liked status from IsJokeLikedUseCase`() =
+    fun `success state reflects liked status from ObserveJokeLikedStatusUseCase`() =
         runTest(mainDispatcherRule.testDispatcher) {
             val repo = FakeJokeRepository().apply {
                 jokeResult = TestJokes.joke1

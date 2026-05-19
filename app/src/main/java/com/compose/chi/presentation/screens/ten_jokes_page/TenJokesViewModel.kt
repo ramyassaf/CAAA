@@ -25,6 +25,8 @@ class TenJokesViewModel(
     }
 
     fun getTenJokes() {
+        if (_state.value.isLoading) return
+
         getTenJokesUseCase().onEach { result ->
             when (result) {
                 is Resource.Success -> {

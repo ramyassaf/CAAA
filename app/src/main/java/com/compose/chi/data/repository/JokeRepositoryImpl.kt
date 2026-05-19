@@ -25,12 +25,12 @@ class JokeRepositoryImpl(
 
 
     // Local (db)
-    override fun getLikedJokes(): Flow<List<Joke>> =
-        jokeDao.getAllLikedJokes().map { list -> list.map {joke ->  joke.toJoke() } }
+    override fun observeLikedJokes(): Flow<List<Joke>> =
+        jokeDao.observeAllLikedJokes().map { list -> list.map { joke ->  joke.toJoke() } }
 
 
-    override fun isJokeLiked(jokeId: Int): Flow<Boolean> =
-        jokeDao.isFavoriteJoke(jokeId = jokeId)
+    override fun observeJokeLikedStatus(jokeId: Int): Flow<Boolean> =
+        jokeDao.observeFavoriteJoke(jokeId = jokeId)
 
 
     override suspend fun upsertJoke(joke: Joke) =

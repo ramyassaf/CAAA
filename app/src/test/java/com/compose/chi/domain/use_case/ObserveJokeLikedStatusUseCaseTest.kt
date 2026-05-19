@@ -12,29 +12,29 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class IsJokeLikedUseCaseTest {
+class ObserveJokeLikedStatusUseCaseTest {
 
     @Test
     fun `returns repository flow for the given joke id`() = runTest {
         val jokeId = 7
         val repository: JokeRepository = mockk {
-            every { isJokeLiked(jokeId) } returns flowOf(true)
+            every { observeJokeLikedStatus(jokeId) } returns flowOf(true)
         }
 
-        IsJokeLikedUseCase(repository)(jokeId).test {
+        ObserveJokeLikedStatusUseCase(repository)(jokeId).test {
             assertEquals(true, awaitItem())
             awaitComplete()
         }
-        verify(exactly = 1) { repository.isJokeLiked(jokeId) }
+        verify(exactly = 1) { repository.observeJokeLikedStatus(jokeId) }
     }
 
     @Test
     fun `propagates errors from the repository flow`() = runTest {
         val repository: JokeRepository = mockk {
-            every { isJokeLiked(any()) } returns flow { throw IllegalStateException("boom") }
+            every { observeJokeLikedStatus(any()) } returns flow { throw IllegalStateException("boom") }
         }
 
-        IsJokeLikedUseCase(repository)(1).test {
+        ObserveJokeLikedStatusUseCase(repository)(1).test {
             assertTrue(awaitError() is IllegalStateException)
         }
     }

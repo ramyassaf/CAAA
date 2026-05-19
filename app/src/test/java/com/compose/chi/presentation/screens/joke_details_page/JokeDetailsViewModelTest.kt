@@ -5,7 +5,7 @@ package com.compose.chi.presentation.screens.joke_details_page
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.compose.chi.domain.use_case.GetJokeByIdUseCase
-import com.compose.chi.domain.use_case.IsJokeLikedUseCase
+import com.compose.chi.domain.use_case.ObserveJokeLikedStatusUseCase
 import com.compose.chi.domain.use_case.UpsertJokeUseCase
 import com.compose.chi.testing.FakeJokeRepository
 import com.compose.chi.testing.MainDispatcherRule
@@ -34,7 +34,7 @@ class JokeDetailsViewModelTest {
     ) = JokeDetailsViewModel(
         savedStateHandle = savedStateHandle,
         getJokeByIdUseCase = GetJokeByIdUseCase(repo),
-        isJokeLikedUseCase = IsJokeLikedUseCase(repo),
+        observeJokeLikedStatusUseCase = ObserveJokeLikedStatusUseCase(repo),
         upsertJokeUseCase = UpsertJokeUseCase(repo)
     )
 

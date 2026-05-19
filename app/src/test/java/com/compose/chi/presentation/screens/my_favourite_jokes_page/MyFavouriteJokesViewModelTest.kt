@@ -4,14 +4,13 @@ package com.compose.chi.presentation.screens.my_favourite_jokes_page
 
 import app.cash.turbine.test
 import com.compose.chi.domain.use_case.DeleteAllJokesUseCase
-import com.compose.chi.domain.use_case.GetLikedJokesUseCase
+import com.compose.chi.domain.use_case.ObserveLikedJokesUseCase
 import com.compose.chi.testing.FakeJokeRepository
 import com.compose.chi.testing.MainDispatcherRule
 import com.compose.chi.testing.TestJokes
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Rule
 import org.junit.Test
 
@@ -21,7 +20,7 @@ class MyFavouriteJokesViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private fun viewModel(repo: FakeJokeRepository) = MyFavouriteJokesViewModel(
-        getLikedJokesUseCase = GetLikedJokesUseCase(repo),
+        observeLikedJokesUseCase = ObserveLikedJokesUseCase(repo),
         deleteAllJokes = DeleteAllJokesUseCase(repo)
     )
 
@@ -37,27 +36,9 @@ class MyFavouriteJokesViewModelTest {
                 // the next item carries the liked jokes from the fake.
                 assertEquals(MyFavouriteJokesState(), awaitItem())
                 assertEquals(
-                    MyFavouriteJokesState(jokes = likedJokes, isLoading = false),
+                    MyFavouriteJokesState(jokes = likedJokes),
                     awaitItem()
                 )
-                cancelAndIgnoreRemainingEvents()
-            }
-        }
-
-    @Test
-    fun `isLoading is false once liked jokes have been emitted`() =
-        runTest(mainDispatcherRule.testDispatcher) {
-            val repo = FakeJokeRepository().apply {
-                setLikedJokes(listOf(TestJokes.joke1Favourite))
-            }
-            val vm = viewModel(repo)
-
-            // WhileSubscribed(5000) — must have an active subscriber for upstream to emit
-            vm.state.test {
-                skipItems(1) // default initial
-                val emitted = awaitItem()
-                assertFalse(emitted.isLoading)
-                assertEquals(listOf(TestJokes.joke1Favourite), emitted.jokes)
                 cancelAndIgnoreRemainingEvents()
             }
         }
@@ -90,15 +71,14 @@ class MyFavouriteJokesViewModelTest {
                 assertEquals(MyFavouriteJokesState(), awaitItem())
                 assertEquals(
                     MyFavouriteJokesState(
-                        jokes = listOf(TestJokes.joke1Favourite, TestJokes.joke2Favourite),
-                        isLoading = false
+                        jokes = listOf(TestJokes.joke1Favourite, TestJokes.joke2Favourite)
                     ),
                     awaitItem()
                 )
 
                 vm.deleteAllItemsFromDb()
                 assertEquals(
-                    MyFavouriteJokesState(jokes = emptyList(), isLoading = false),
+                    MyFavouriteJokesState(jokes = emptyList()),
                     awaitItem()
                 )
 

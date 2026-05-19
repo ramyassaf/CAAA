@@ -66,7 +66,6 @@ dependencies {
     // androidx test deps publish a strict kotlinx-coroutines-bom 1.9.0 constraint
     // that makes runTest 1.11 fail at runtime with a NoSuchMethodError on runBlockingK.
     debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
 
     testImplementation(libs.mockk) // MockK has better support than Mockito for Kotlin features, including coroutines.
     testImplementation(libs.kotlinx.coroutines.test)
@@ -86,7 +85,6 @@ dependencies {
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
-    implementation(libs.koin.androidx.compose.navigation)
 
     // Retrofit
     implementation(libs.retrofit)

@@ -14,9 +14,9 @@ interface JokeRepository {
     suspend fun getJokeById(jokeId: String): Joke
 
     // Local (db)
-    fun getLikedJokes(): Flow<List<Joke>>
+    fun observeLikedJokes(): Flow<List<Joke>>
 
-    fun isJokeLiked(jokeId: Int): Flow<Boolean>
+    fun observeJokeLikedStatus(jokeId: Int): Flow<Boolean>
 
     suspend fun upsertJoke(joke: Joke)
 

@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.compose.chi.common.Resource
 import com.compose.chi.domain.model.Joke
 import com.compose.chi.domain.use_case.GetJokeUseCase
-import com.compose.chi.domain.use_case.IsJokeLikedUseCase
+import com.compose.chi.domain.use_case.ObserveJokeLikedStatusUseCase
 import com.compose.chi.domain.use_case.UpsertJokeUseCase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 
 class JokeHomeViewModel(
     private val getJokeUseCase: GetJokeUseCase,
-    private val isJokeLikedUseCase: IsJokeLikedUseCase,
+    private val observeJokeLikedStatusUseCase: ObserveJokeLikedStatusUseCase,
     private val upsertJokeUseCase: UpsertJokeUseCase
 ): ViewModel() {
 
@@ -36,9 +36,9 @@ class JokeHomeViewModel(
             when (result) {
                 is Resource.Success -> {
                     result.data?.let { joke ->
-                        // Collect the flow from IsJokeLikedUseCase and consume its values each time it changes,
+                        // Collect the flow from ObserveJokeLikedStatusUseCase and consume its values each time it changes,
                         // then update _state with the new isFavourite value
-                        isJokeLikedUseCase(joke.id).collect { isLiked ->
+                        observeJokeLikedStatusUseCase(joke.id).collect { isLiked ->
                             if (isLiked) {
                                 val jokeCopyFav = result.data.copy(isFavourite = true)
                                 _state.update { JokeHomeState(joke = jokeCopyFav) }
