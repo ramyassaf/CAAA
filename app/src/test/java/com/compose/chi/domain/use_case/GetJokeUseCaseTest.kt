@@ -5,7 +5,6 @@ import com.compose.chi.domain.model.Joke
 import com.compose.chi.domain.repository.JokeRepository
 import com.compose.chi.testing.TestJokes
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
@@ -18,23 +17,20 @@ import retrofit2.HttpException
 import retrofit2.Response
 import java.io.IOException
 
-class GetJokeByIdUseCaseTest {
-
-    private val jokeId = TestJokes.joke1.id.toString()
+class GetJokeUseCaseTest {
 
     @Test
-    fun `emits Loading then Success and passes requested id to repository`() = runTest {
+    fun `emits Loading then Success with joke from repository`() = runTest {
         val repository: JokeRepository = mockk {
-            coEvery { getJokeById(jokeId) } returns TestJokes.joke1
+            coEvery { getJoke() } returns TestJokes.joke1
         }
 
-        val result = GetJokeByIdUseCase(repository)(jokeId).toList()
+        val result = GetJokeUseCase(repository)().toList()
 
         assertEquals(2, result.size)
         assertTrue(result[0] is Resource.Loading<Joke>)
         assertTrue(result[1] is Resource.Success<Joke>)
         assertEquals(TestJokes.joke1, (result[1] as Resource.Success<Joke>).data)
-        coVerify(exactly = 1) { repository.getJokeById(jokeId) }
     }
 
     @Test
@@ -45,10 +41,10 @@ class GetJokeByIdUseCaseTest {
             errorMessage.toResponseBody("text/plain".toMediaType())
         )
         val repository: JokeRepository = mockk {
-            coEvery { getJokeById(jokeId) } throws HttpException(response)
+            coEvery { getJoke() } throws HttpException(response)
         }
 
-        val result = GetJokeByIdUseCase(repository)(jokeId).toList()
+        val result = GetJokeUseCase(repository)().toList()
 
         assertEquals(2, result.size)
         assertTrue(result[0] is Resource.Loading<Joke>)
@@ -59,10 +55,10 @@ class GetJokeByIdUseCaseTest {
     @Test
     fun `emits Loading then Error with network message on IOException`() = runTest {
         val repository: JokeRepository = mockk {
-            coEvery { getJokeById(jokeId) } throws IOException()
+            coEvery { getJoke() } throws IOException()
         }
 
-        val result = GetJokeByIdUseCase(repository)(jokeId).toList()
+        val result = GetJokeUseCase(repository)().toList()
 
         assertEquals(2, result.size)
         assertTrue(result[0] is Resource.Loading<Joke>)

@@ -18,7 +18,8 @@ data class JokeEntity(
             punchline = punchline,
             setup = setup,
             type = type,
-            id = id
+            id = id,
+            isFavourite = isFavourite
         )
     }
 }
