@@ -66,6 +66,7 @@ dependencies {
 
     testImplementation(libs.mockk) // MockK has better support than Mockito for Kotlin features, including coroutines.
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
 
     // Compose
     implementation(libs.androidx.navigation.compose)

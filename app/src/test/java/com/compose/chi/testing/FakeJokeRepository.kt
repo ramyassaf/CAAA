@@ -1,0 +1,77 @@
+package com.compose.chi.testing
+
+import com.compose.chi.domain.model.Joke
+import com.compose.chi.domain.repository.JokeRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+
+/**
+ * Hand-written fake of [JokeRepository] for ViewModel and use-case tests.
+ *
+ * Each remote method holds either a configured result joke/list or an exception
+ * to throw. Local liked-jokes state is exposed via [likedJokes] so tests can
+ * push updates and assert downstream collection behavior.
+ */
+class FakeJokeRepository : JokeRepository {
+
+    var jokeResult: Joke = TestJokes.joke1
+    var jokeError: Throwable? = null
+
+    var tenJokesResult: List<Joke> = TestJokes.tenJokes()
+    var tenJokesError: Throwable? = null
+
+    var jokeByIdResult: Joke = TestJokes.joke1
+    var jokeByIdError: Throwable? = null
+    var lastRequestedJokeId: String? = null
+
+    private val likedJokes = MutableStateFlow<List<Joke>>(emptyList())
+    private val likedStatuses = MutableStateFlow<Map<Int, Boolean>>(emptyMap())
+
+    var upsertError: Throwable? = null
+    var deleteAllError: Throwable? = null
+
+    val upsertedJokes: MutableList<Joke> = mutableListOf()
+    var deleteAllCallCount: Int = 0
+
+    fun setLikedJokes(jokes: List<Joke>) {
+        likedJokes.value = jokes
+    }
+
+    fun setLikedStatus(jokeId: Int, isLiked: Boolean) {
+        likedStatuses.value = likedStatuses.value + (jokeId to isLiked)
+    }
+
+    override suspend fun getJoke(): Joke {
+        jokeError?.let { throw it }
+        return jokeResult
+    }
+
+    override suspend fun getTenJokes(): List<Joke> {
+        tenJokesError?.let { throw it }
+        return tenJokesResult
+    }
+
+    override suspend fun getJokeById(jokeId: String): Joke {
+        lastRequestedJokeId = jokeId
+        jokeByIdError?.let { throw it }
+        return jokeByIdResult
+    }
+
+    override fun getLikedJokes(): Flow<List<Joke>> = likedJokes.asStateFlow()
+
+    override fun isJokeLiked(jokeId: Int): Flow<Boolean> =
+        likedStatuses.asStateFlow().map { it[jokeId] ?: false }
+
+    override suspend fun upsertJoke(joke: Joke) {
+        upsertError?.let { throw it }
+        upsertedJokes.add(joke)
+    }
+
+    override suspend fun deleteAllJokes() {
+        deleteAllError?.let { throw it }
+        deleteAllCallCount += 1
+        likedJokes.value = emptyList()
+    }
+}
