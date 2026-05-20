@@ -2,6 +2,7 @@ package com.compose.chi.testing
 
 import com.compose.chi.domain.model.Joke
 import com.compose.chi.domain.repository.JokeRepository
+import com.compose.chi.domain.result.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -10,20 +11,17 @@ import kotlinx.coroutines.flow.map
 /**
  * Hand-written fake of [JokeRepository] for ViewModel and use-case tests.
  *
- * Each remote method holds either a configured result joke/list or an exception
- * to throw. Local liked-jokes state is exposed via [likedJokes] so tests can
- * push updates and assert downstream collection behavior.
+ * Each remote method holds a configured Resource. Local liked-jokes state is
+ * exposed via [likedJokes] so tests can push updates and assert downstream
+ * collection behavior.
  */
 class FakeJokeRepository : JokeRepository {
 
-    var jokeResult: Joke = TestJokes.joke1
-    var jokeError: Throwable? = null
+    var jokeResource: Resource<Joke> = Resource.Success(TestJokes.joke1)
 
-    var tenJokesResult: List<Joke> = TestJokes.tenJokes()
-    var tenJokesError: Throwable? = null
+    var tenJokesResource: Resource<List<Joke>> = Resource.Success(TestJokes.tenJokes())
 
-    var jokeByIdResult: Joke = TestJokes.joke1
-    var jokeByIdError: Throwable? = null
+    var jokeByIdResource: Resource<Joke> = Resource.Success(TestJokes.joke1)
     var lastRequestedJokeId: String? = null
 
     private val likedJokes = MutableStateFlow<List<Joke>>(emptyList())
@@ -43,20 +41,13 @@ class FakeJokeRepository : JokeRepository {
         likedStatuses.value = likedStatuses.value + (jokeId to isLiked)
     }
 
-    override suspend fun getJoke(): Joke {
-        jokeError?.let { throw it }
-        return jokeResult
-    }
+    override suspend fun getJoke(): Resource<Joke> = jokeResource
 
-    override suspend fun getTenJokes(): List<Joke> {
-        tenJokesError?.let { throw it }
-        return tenJokesResult
-    }
+    override suspend fun getTenJokes(): Resource<List<Joke>> = tenJokesResource
 
-    override suspend fun getJokeById(jokeId: String): Joke {
+    override suspend fun getJokeById(jokeId: String): Resource<Joke> {
         lastRequestedJokeId = jokeId
-        jokeByIdError?.let { throw it }
-        return jokeByIdResult
+        return jokeByIdResource
     }
 
     override fun observeLikedJokes(): Flow<List<Joke>> = likedJokes.asStateFlow()

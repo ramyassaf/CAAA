@@ -3,21 +3,19 @@
 package com.compose.chi.presentation.screens.ten_jokes_page
 
 import app.cash.turbine.test
+import com.compose.chi.domain.result.DomainError
+import com.compose.chi.domain.result.Resource
 import com.compose.chi.domain.use_case.GetTenJokesUseCase
 import com.compose.chi.testing.FakeJokeRepository
 import com.compose.chi.testing.MainDispatcherRule
 import com.compose.chi.testing.TestJokes
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
-import retrofit2.HttpException
-import retrofit2.Response
 
 class TenJokesViewModelTest {
 
@@ -32,7 +30,9 @@ class TenJokesViewModelTest {
     fun `initial load emits loading then success list`() =
         runTest(mainDispatcherRule.testDispatcher) {
             val jokes = TestJokes.tenJokes()
-            val repo = FakeJokeRepository().apply { tenJokesResult = jokes }
+            val repo = FakeJokeRepository().apply {
+                tenJokesResource = Resource.Success(jokes)
+            }
             val vm = viewModel(repo)
 
             vm.state.test {
@@ -47,12 +47,7 @@ class TenJokesViewModelTest {
     fun `error from GetTenJokesUseCase produces state with non-blank error`() =
         runTest(mainDispatcherRule.testDispatcher) {
             val repo = FakeJokeRepository().apply {
-                tenJokesError = HttpException(
-                    Response.error<Any>(
-                        503,
-                        "down".toResponseBody("text/plain".toMediaType())
-                    )
-                )
+                tenJokesResource = Resource.Error(DomainError.Server)
             }
             val vm = viewModel(repo)
             advanceUntilIdle()
@@ -74,14 +69,16 @@ class TenJokesViewModelTest {
                     type = "general"
                 )
             }
-            val repo = FakeJokeRepository().apply { tenJokesResult = firstBatch }
+            val repo = FakeJokeRepository().apply {
+                tenJokesResource = Resource.Success(firstBatch)
+            }
             val vm = viewModel(repo)
             advanceUntilIdle()
 
             // sanity: first batch loaded
             assertEquals(firstBatch, vm.state.value.jokes)
 
-            repo.tenJokesResult = secondBatch
+            repo.tenJokesResource = Resource.Success(secondBatch)
             vm.getTenJokes()
             advanceUntilIdle()
 

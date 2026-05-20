@@ -4,6 +4,8 @@ import app.cash.turbine.test
 import com.compose.chi.data.database.JokeDao
 import com.compose.chi.data.database.model.JokeEntity
 import com.compose.chi.data.remote.JokeApi
+import com.compose.chi.domain.result.DomainError
+import com.compose.chi.domain.result.Resource
 import com.compose.chi.testing.TestJokes
 import io.mockk.Runs
 import io.mockk.coEvery
@@ -17,13 +19,14 @@ import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import retrofit2.HttpException
 import retrofit2.Response
 import java.io.IOException
+import kotlin.coroutines.cancellation.CancellationException
+import org.junit.Assert.fail
 
 class JokeRepositoryImplTest {
 
@@ -41,61 +44,92 @@ class JokeRepositoryImplTest {
     // --- Remote -------------------------------------------------------------
 
     @Test
-    fun `getJoke maps API DTO to domain joke`() = runTest {
+    fun `getJoke returns Success with mapped domain joke`() = runTest {
         coEvery { api.getJoke() } returns TestJokes.jokeDto1
 
         val result = repository.getJoke()
 
-        assertEquals(TestJokes.jokeDto1.toJoke(), result)
+        assertEquals(Resource.Success(TestJokes.jokeDto1.toJoke()), result)
         coVerify(exactly = 1) { api.getJoke() }
     }
 
     @Test
-    fun `getTenJokes maps every DTO from API to domain joke`() = runTest {
+    fun `getTenJokes returns Success with mapped domain jokes`() = runTest {
         val dtos = TestJokes.tenJokeDtos()
         coEvery { api.getTenJokes() } returns dtos
 
         val result = repository.getTenJokes()
 
-        assertEquals(dtos.map { it.toJoke() }, result)
-        assertEquals(dtos.size, result.size)
+        assertEquals(Resource.Success(dtos.map { it.toJoke() }), result)
         coVerify(exactly = 1) { api.getTenJokes() }
     }
 
     @Test
-    fun `getJokeById passes the id to the API and maps the DTO`() = runTest {
+    fun `getJokeById returns Success and passes the id to the API`() = runTest {
         val jokeId = "42"
         val dto = TestJokes.jokeDto1.copy(id = 42)
         coEvery { api.getJokeById(jokeId) } returns dto
 
         val result = repository.getJokeById(jokeId)
 
-        assertEquals(dto.toJoke(), result)
+        assertEquals(Resource.Success(dto.toJoke()), result)
         coVerify(exactly = 1) { api.getJokeById(jokeId) }
     }
 
     @Test
-    fun `remote HttpException is not swallowed by getJoke`() = runTest {
-        val httpException = HttpException(
-            Response.error<Any>(
-                500,
-                "boom".toResponseBody("text/plain".toMediaType())
-            )
-        )
-        coEvery { api.getJoke() } throws httpException
+    fun `IOException maps to Network error`() = runTest {
+        coEvery { api.getJoke() } throws IOException("offline")
 
-        val thrown = assertThrows(HttpException::class.java) {
-            kotlinx.coroutines.runBlocking { repository.getJoke() }
-        }
-        assertEquals(500, thrown.code())
+        val result = repository.getJoke()
+
+        assertEquals(Resource.Error(DomainError.Network), result)
     }
 
     @Test
-    fun `remote IOException is not swallowed by getJokeById`() = runTest {
-        coEvery { api.getJokeById("1") } throws IOException("offline")
+    fun `HttpException 404 maps to NotFound error`() = runTest {
+        coEvery { api.getJokeById("1") } throws httpException(404)
 
-        assertThrows(IOException::class.java) {
-            kotlinx.coroutines.runBlocking { repository.getJokeById("1") }
+        val result = repository.getJokeById("1")
+
+        assertEquals(Resource.Error(DomainError.NotFound), result)
+    }
+
+    @Test
+    fun `HttpException 5xx maps to Server error`() = runTest {
+        coEvery { api.getTenJokes() } throws httpException(503)
+
+        val result = repository.getTenJokes()
+
+        assertEquals(Resource.Error(DomainError.Server), result)
+    }
+
+    @Test
+    fun `other HttpException maps to Unknown error`() = runTest {
+        coEvery { api.getJoke() } throws httpException(400)
+
+        val result = repository.getJoke()
+
+        assertEquals(Resource.Error(DomainError.Unknown), result)
+    }
+
+    @Test
+    fun `unknown RuntimeException maps to Unknown error`() = runTest {
+        coEvery { api.getJoke() } throws RuntimeException("boom")
+
+        val result = repository.getJoke()
+
+        assertEquals(Resource.Error(DomainError.Unknown), result)
+    }
+
+    @Test
+    fun `CancellationException is rethrown instead of converted to Error`() = runTest {
+        coEvery { api.getJoke() } throws CancellationException("cancelled")
+
+        try {
+            repository.getJoke()
+            fail("Expected CancellationException")
+        } catch (e: CancellationException) {
+            assertEquals("cancelled", e.message)
         }
     }
 
@@ -170,4 +204,12 @@ class JokeRepositoryImplTest {
 
         coVerify(exactly = 1) { dao.deleteAllJokes() }
     }
+
+    private fun httpException(code: Int): HttpException =
+        HttpException(
+            Response.error<Any>(
+                code,
+                "error".toResponseBody("text/plain".toMediaType())
+            )
+        )
 }

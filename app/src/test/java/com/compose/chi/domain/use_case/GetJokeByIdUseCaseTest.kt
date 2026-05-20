@@ -1,75 +1,28 @@
 package com.compose.chi.domain.use_case
 
-import com.compose.chi.common.Resource
-import com.compose.chi.domain.model.Joke
 import com.compose.chi.domain.repository.JokeRepository
+import com.compose.chi.domain.result.Resource
 import com.compose.chi.testing.TestJokes
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.ResponseBody.Companion.toResponseBody
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
+import org.junit.Assert.assertSame
 import org.junit.Test
-import retrofit2.HttpException
-import retrofit2.Response
-import java.io.IOException
 
 class GetJokeByIdUseCaseTest {
 
-    private val jokeId = TestJokes.joke1.id.toString()
-
     @Test
-    fun `emits Loading then Success and passes requested id to repository`() = runTest {
+    fun `returns repository result unchanged and passes requested id`() = runTest {
+        val jokeId = TestJokes.joke1.id.toString()
+        val expectedResult = Resource.Success(TestJokes.joke1)
         val repository: JokeRepository = mockk {
-            coEvery { getJokeById(jokeId) } returns TestJokes.joke1
+            coEvery { getJokeById(jokeId) } returns expectedResult
         }
 
-        val result = GetJokeByIdUseCase(repository)(jokeId).toList()
+        val result = GetJokeByIdUseCase(repository)(jokeId)
 
-        assertEquals(2, result.size)
-        assertTrue(result[0] is Resource.Loading<Joke>)
-        assertTrue(result[1] is Resource.Success<Joke>)
-        assertEquals(TestJokes.joke1, (result[1] as Resource.Success<Joke>).data)
+        assertSame(expectedResult, result)
         coVerify(exactly = 1) { repository.getJokeById(jokeId) }
-    }
-
-    @Test
-    fun `emits Loading then Error on HttpException`() = runTest {
-        val errorMessage = "HTTP 404 Response.error()"
-        val response: Response<Any> = Response.error(
-            404,
-            errorMessage.toResponseBody("text/plain".toMediaType())
-        )
-        val repository: JokeRepository = mockk {
-            coEvery { getJokeById(jokeId) } throws HttpException(response)
-        }
-
-        val result = GetJokeByIdUseCase(repository)(jokeId).toList()
-
-        assertEquals(2, result.size)
-        assertTrue(result[0] is Resource.Loading<Joke>)
-        assertTrue(result[1] is Resource.Error<Joke>)
-        assertEquals(errorMessage, (result[1] as Resource.Error<Joke>).message)
-    }
-
-    @Test
-    fun `emits Loading then Error with network message on IOException`() = runTest {
-        val repository: JokeRepository = mockk {
-            coEvery { getJokeById(jokeId) } throws IOException()
-        }
-
-        val result = GetJokeByIdUseCase(repository)(jokeId).toList()
-
-        assertEquals(2, result.size)
-        assertTrue(result[0] is Resource.Loading<Joke>)
-        assertTrue(result[1] is Resource.Error<Joke>)
-        assertEquals(
-            "Couldn't reach server. Check your internet connection.",
-            (result[1] as Resource.Error<Joke>).message
-        )
     }
 }

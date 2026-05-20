@@ -3,6 +3,8 @@
 package com.compose.chi.presentation.screens.joke_home_page
 
 import app.cash.turbine.test
+import com.compose.chi.domain.result.DomainError
+import com.compose.chi.domain.result.Resource
 import com.compose.chi.domain.use_case.GetJokeUseCase
 import com.compose.chi.domain.use_case.ObserveJokeLikedStatusUseCase
 import com.compose.chi.domain.use_case.UpsertJokeUseCase
@@ -11,15 +13,11 @@ import com.compose.chi.testing.MainDispatcherRule
 import com.compose.chi.testing.TestJokes
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
-import retrofit2.HttpException
-import retrofit2.Response
 
 class JokeHomeViewModelTest {
 
@@ -35,7 +33,9 @@ class JokeHomeViewModelTest {
     @Test
     fun `initial load emits loading then success state from getJoke`() =
         runTest(mainDispatcherRule.testDispatcher) {
-            val repo = FakeJokeRepository().apply { jokeResult = TestJokes.joke1 }
+            val repo = FakeJokeRepository().apply {
+                jokeResource = Resource.Success(TestJokes.joke1)
+            }
             val vm = viewModel(repo)
 
             vm.state.test {
@@ -50,7 +50,7 @@ class JokeHomeViewModelTest {
     fun `success state reflects liked status from ObserveJokeLikedStatusUseCase`() =
         runTest(mainDispatcherRule.testDispatcher) {
             val repo = FakeJokeRepository().apply {
-                jokeResult = TestJokes.joke1
+                jokeResource = Resource.Success(TestJokes.joke1)
                 setLikedStatus(TestJokes.joke1.id, true)
             }
             val vm = viewModel(repo)
@@ -67,7 +67,9 @@ class JokeHomeViewModelTest {
     @Test
     fun `liked status flow update changes state joke isFavourite`() =
         runTest(mainDispatcherRule.testDispatcher) {
-            val repo = FakeJokeRepository().apply { jokeResult = TestJokes.joke1 }
+            val repo = FakeJokeRepository().apply {
+                jokeResource = Resource.Success(TestJokes.joke1)
+            }
             val vm = viewModel(repo)
 
             vm.state.test {
@@ -86,7 +88,9 @@ class JokeHomeViewModelTest {
     @Test
     fun `toggleLikeJokeInDb updates state and delegates to UpsertJokeUseCase`() =
         runTest(mainDispatcherRule.testDispatcher) {
-            val repo = FakeJokeRepository().apply { jokeResult = TestJokes.joke1 }
+            val repo = FakeJokeRepository().apply {
+                jokeResource = Resource.Success(TestJokes.joke1)
+            }
             val vm = viewModel(repo)
             advanceUntilIdle()
 
@@ -101,12 +105,7 @@ class JokeHomeViewModelTest {
     fun `error from GetJokeUseCase produces state with non-blank error`() =
         runTest(mainDispatcherRule.testDispatcher) {
             val repo = FakeJokeRepository().apply {
-                jokeError = HttpException(
-                    Response.error<Any>(
-                        500,
-                        "boom".toResponseBody("text/plain".toMediaType())
-                    )
-                )
+                jokeResource = Resource.Error(DomainError.Server)
             }
             val vm = viewModel(repo)
             advanceUntilIdle()
