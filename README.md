@@ -1,6 +1,6 @@
 # CAAA — Clean Architecture Jetpack Compose Android Skeleton
 
-> **Status:** Actively maintained and continuously modernized. The repository evolves incrementally with architecture, tooling, and testing improvements focused on modern Android development practices. See [Roadmap](#roadmap) below.
+> **Status:** Actively maintained and continuously modernized. 2026 Updates done: modern Android toolchain migration, migrantion from manual to Koin dependency injection, and expanded test safety net. The next major milestone is three-module modularization (`:domain`, `:data`, `:app`) as preparation for future Kotlin Multiplatform work.
 
 ## What this project is
 
@@ -40,7 +40,7 @@ Cross-cutting concerns (`Resource<T>` sealed class, constants, analytics logger,
 | Local storage | Room |
 | Networking | Retrofit 2, OkHttp, Gson |
 | DI | Koin |
-| Testing | JUnit 4, MockK, `kotlinx-coroutines-test` |
+| Testing | JUnit 4, MockK, `kotlinx-coroutines-test`, Turbine, in-memory Room DAO tests |
 | Build | Gradle Kotlin DSL with Version Catalogue (`libs.versions.toml`) |
 | Annotation processing | KSP (Room compiler) |
 
@@ -65,7 +65,7 @@ app/src/main/java/com/compose/chi/
 │   └── ui/theme/     # Compose theme, colors, typography, shapes
 ├── ChiApplication.kt
 └── MainActivity.kt
-````
+```
 
 ## Features implemented
 
@@ -78,45 +78,110 @@ The four screens cover the full architectural pipeline:
 
 Bottom navigation, nested navigation graphs, multiple back stacks, and dark/light theme toggle are all implemented.
 
+## Testing strategy
+
+Phase 4 expanded the project from sample-level testing into a meaningful regression safety net before modularization.
+
+The current test suite covers:
+
+- **Use cases** — all seven use cases are tested, including happy paths and error paths where relevant.
+- **Remote `Resource` flows** — `GetJokeUseCase`, `GetTenJokesUseCase`, and `GetJokeByIdUseCase` verify Loading → Success, HTTP error, and network error branches.
+- **Local/delegating use cases** — liked-jokes observation, liked-status observation, upsert, and delete-all behavior are tested for delegation and error propagation.
+- **Mappers** — DTO/entity/domain mapping is tested explicitly, including preservation of `isFavourite`.
+- **Repository implementation** — `JokeRepositoryImpl` is tested against mocked API and DAO dependencies to verify mapping, delegation, and exception propagation.
+- **ViewModels** — all four screen ViewModels are tested with Turbine and a shared fake repository to verify StateFlow behavior.
+- **Room DAO** — instrumented tests use an in-memory Room database to verify insert, query, favourite filtering, liked-state lookup, and delete-all behavior.
+
+Current totals:
+
+- **47 JVM unit tests**
+- **5 Room DAO instrumented tests**
+- **52 tests total**
+
+Generated template tests were removed and replaced with meaningful coverage.
+
+A detailed testing report is available in `docs/tests/Testing.md`.
+
 ## Technologies checklist
 
 | #  | Item                                                             | Status |
 | -- | ---------------------------------------------------------------- | :----: |
-| 1  | Kotlin                                                           |    ✅   |
-| 2  | Clean Architecture (3 layers)                                    |    ✅   |
-| 3  | MVVM                                                             |    ✅   |
-| 4  | Jetpack Compose + Navigation (single Activity, no Fragments)     |    ✅   |
-| 5  | REST API with OkHttp + Retrofit2                                 |    ✅   |
-| 6  | Database caching with Room (favourites persisted)                |    ✅   |
-| 7  | Use cases (Dependency Inversion impl for unit testing)           |    ✅   |
-| 8  | Kotlin Coroutines + Flow + StateFlow                             |    ✅   |
-| 9  | Koin Dependency Injection                                        |    ✅   |
-| 10 | Dependency management with Gradle Kotlin DSL + Version Catalogue |    ✅   |
-| 11 | Kotlin 2.x + Compose modernization                               |    ✅   |
-| 12 | Unit Tests (sample)                                              |    ✅   |
-| 13 | Network Connectivity monitoring                                  |    ⏳   |
-| 14 | DataStore (replacement for SharedPreferences)                    |    ⏳   |
-| 15 | MockWebServer for repository/API integration tests               |    ⏳   |
-| 16 | Offline-first repository pattern (cache + network)               |    ⏳   |
-| 17 | Full unit test coverage across all use cases and ViewModels      |    ⏳   |
+| 1  | Kotlin                                                           |   ✅   |
+| 2  | Clean Architecture (3 layers)                                    |   ✅   |
+| 3  | MVVM                                                             |   ✅   |
+| 4  | Jetpack Compose + Navigation (single Activity, no Fragments)     |   ✅   |
+| 5  | REST API with OkHttp + Retrofit2                                 |   ✅   |
+| 6  | Database caching with Room (favourites persisted)                |   ✅   |
+| 7  | Use cases with dependency inversion                              |   ✅   |
+| 8  | Kotlin Coroutines + Flow + StateFlow                             |   ✅   |
+| 9  | Koin Dependency Injection                                        |   ✅   |
+| 10 | Dependency management with Gradle Kotlin DSL + Version Catalogue |   ✅   |
+| 11 | Kotlin 2.x + Compose modernization                               |   ✅   |
+| 12 | Expanded unit tests across use cases, repository, mappers, VMs   |   ✅   |
+| 13 | Turbine-based ViewModel StateFlow tests                          |   ✅   |
+| 14 | Room DAO in-memory instrumented tests                            |   ✅   |
+| 15 | Three-module modularization (`:domain`, `:data`, `:app`)         |   ⏳   |
+| 16 | Static analysis with ktlint / Spotless / Detekt / Konsist        |   ⏳   |
+| 17 | Offline-first repository pattern                                 |   ⏳   |
+| 18 | MockWebServer API integration tests                              |   ⏳   |
+| 19 | Network connectivity monitoring                                  |   ⏳   |
+| 20 | DataStore                                                        |   ⏳   |
+| 21 | Kotlin Multiplatform exploration                                 |   ⏳   |
 
 ## Roadmap
 
-The repository is actively maintained. Planned additions:
+The repository is modernized incrementally so each phase leaves the app buildable, reviewable, and easier to evolve. The current order is intentional: tests were expanded before modularization so future structural changes have regression protection.
 
-* **Expanded test coverage** — Tests for every use case (happy path + error paths), ViewModel Flow testing using Turbine, and repository integration tests using `Room.inMemoryDatabaseBuilder`.
+Completed:
 
-* **Future modularization** — Gradual migration toward dedicated `domain`, `data`, and `app` modules as preparation for future multiplatform support.
+- **Architectural cleanup**
+    - Immutability cleanup.
+    - Repository Flow simplifications.
+    - ViewModel collector re-entry fix.
+    - Mockito removal and MockK cleanup.
 
-* **Offline-first repository pattern** — Refactor repository flows to emit cached data first, then fetch from network, persist, and re-emit fresh values.
+- **Toolchain modernization**
+    - Kotlin 2.3.21.
+    - AGP 9.2.1 / Gradle 9.5.1.
+    - Compose BOM 2026.05.00.
+    - SDK 36.
+    - KSP and Compose compiler plugin modernization.
 
-* **MockWebServer integration** — End-to-end tests of the data layer against a controllable fake HTTP server.
+- **Experimental API audit**
+    - Existing Material 3 experimental opt-ins reviewed and intentionally retained where still required.
 
-* **DataStore** — Replace any future SharedPreferences usage with DataStore.
+- **Koin migration**
+    - Manual dependency graph removed.
+    - Koin module wiring added.
+    - ViewModels moved to constructor-injected Koin creation.
+    - `SavedStateHandle` support preserved for joke details.
 
-* **Network connectivity monitoring** — Expose connectivity state as a Flow consumable by ViewModels for offline UX handling.
+- **Expanded test safety net**
+    - Use-case tests.
+    - Mapper tests.
+    - Repository implementation tests.
+    - ViewModel StateFlow tests with Turbine.
+    - Room DAO in-memory instrumented tests.
+    - Generated example tests removed.
 
-* **Long-term Kotlin Multiplatform exploration** — Evaluate migration of the architecture toward shared business and data layers.
+Planned:
+
+- **Three-module modularization**
+    - Split the current single app module into `:domain`, `:data`, and `:app`.
+    - Preserve the same Clean Architecture boundaries while making them enforceable at the Gradle module level.
+    - Prepare the structure for future KMP source-set separation.
+
+- **Static analysis and architecture enforcement**
+    - Add ktlint, Spotless, Detekt, and Konsist.
+    - Enforce formatting, complexity limits, and Clean Architecture dependency rules.
+
+- **Offline-first repository pattern**
+    - Move repository behavior toward cached-first flows backed by Room.
+    - Emit cached data first, then refresh from the network and persist updates.
+
+- **Kotlin Multiplatform**
+    - Evaluate moving domain and data foundations toward shared Kotlin code.
+    - Prepare for Room KMP, Ktor networking, and shared dependency wiring.
 
 ## Considered
 
