@@ -2,10 +2,58 @@
 
 All notable changes to CAAA are documented here.
 
+## May 2026 - Clean Architecture boundary hardening
 
-### May 2026 - Test expansion
+### Added
 
-#### Added
+- Domain-safe result abstractions under `com.compose.chi.domain.result`:
+  - `Resource.Success`
+  - `Resource.Error`
+  - `DomainError`
+- `DomainError.Persistence` for Room/DAO/local persistence failures.
+- Presentation-level `DomainErrorUiMapper` for mapping domain errors to user-facing messages.
+- Konsist architecture tests for:
+  - domain-layer dependency boundaries
+  - data-layer dependency direction
+  - repository contract/implementation placement
+  - use-case shape and package rules
+  - remote API conventions
+  - project-wide wildcard import guardrails
+- Retry UI for the Ten Jokes error state, allowing the user to reload after a joke-loading failure.
+
+### Changed
+
+- Remote one-shot repository methods now remain `suspend` functions returning domain-safe `Resource<T>` values.
+- `Resource.Loading` is no longer part of the domain result contract; loading is represented by ViewModel/UI state.
+- Observable Room-backed reads now return `Flow<Resource<T>>` so local persistence failures can be represented without leaking Room exceptions.
+- Local write operations now return `Resource<Unit>` so Room/DAO failures are mapped inside the data layer.
+- `JokeRepositoryImpl` now owns Retrofit, HTTP, IO/network, Room, DAO, persistence, and unknown technical exception mapping.
+- Use cases now delegate/orchestrate over domain-safe results and no longer catch transport or persistence exceptions.
+- ViewModel and use-case tests now assert domain-safe `Resource` / `DomainError` values instead of Retrofit, OkHttp, Java IO, or Room exception types.
+
+### Removed
+
+- `Resource.Loading` from the domain result type.
+- Technical exception handling responsibility from use cases.
+- The old `common.Resource` location.
+- Retrofit/OkHttp/Java IO exception expectations from domain and presentation tests.
+
+### Notes
+
+- Coroutine `CancellationException` is intentionally rethrown during data-layer error mapping.
+- Retrofit remains the networking implementation. This update hardens the architecture boundary; it does not migrate networking to Ktor.
+- No KMP, SQLDelight, Detekt, ktlint, Spotless, or broad static-analysis configuration was added in this update.
+
+### Totals after this update
+
+- 81 JVM unit tests.
+- 5 Room DAO instrumented tests.
+- 86 tests total.
+
+## May 2026 - Test expansion 
+
+### Added
+
 - Turbine 1.2.1 (`testImplementation`) via the version catalog.
 - Shared JVM test helpers under `com.compose.chi.testing`: `MainDispatcherRule`, `TestJokes`, `FakeJokeRepository`.
 - Mapper tests: `JokeDtoMapperTest`, `JokeEntityMapperTest` (both directions, all fields including `isFavourite`).

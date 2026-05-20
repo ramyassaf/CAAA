@@ -1,33 +1,42 @@
 # CAAA — Clean Architecture Jetpack Compose Android Skeleton
 
-> **Status:** Actively maintained and continuously modernized. 2026 Updates done: modern Android toolchain migration, migrantion from manual to Koin dependency injection, and expanded test safety net. The next major milestone is three-module modularization (`:domain`, `:data`, `:app`) as preparation for future Kotlin Multiplatform work.
+> **Status:** Actively maintained and continuously modernized. 2026 updates include Android runtime/toolchain modernization, migration from manual dependency injection to Koin, expanded test coverage, strict Clean Architecture boundary hardening, and Konsist architecture guardrails. The next major milestone is three-module modularization (`:domain`, `:data`, `:app`) as preparation for future Kotlin Multiplatform work.
 
 ## What this project is
 
 **The primary goal of this repository is to demonstrate a complete, idiomatic implementation of Clean Architecture in a modern Android application built with Jetpack Compose.**
 
-CAAA is a small but architecturally complete Android skeleton, built around a single feature (jokes from [official-joke-api.appspot.com](https://official-joke-api.appspot.com)) deliberately kept small so the architecture itself remains the focus rather than the feature surface. The codebase is intended to serve as:
+CAAA is a small but architecturally complete Android skeleton built around a single feature: jokes from [official-joke-api.appspot.com](https://official-joke-api.appspot.com). The feature surface is intentionally narrow so the architecture remains the focus.
 
-- A reference for **junior and mid-level Android developers** wanting to see Clean Architecture and SOLID principles applied in practice with modern Android tooling.
-- A **starting point for new Android projects** that need a solid architectural foundation from day one.
-- A **portfolio artifact** demonstrating the author's approach to mobile architecture.
+The codebase is intended to serve as:
+
+- A reference for **junior and mid-level Android developers** who want to see Clean Architecture and SOLID principles applied in a modern Android app.
+- A **starting point for new Android projects** that need clear architectural boundaries from day one.
+- A **portfolio artifact** demonstrating the author’s approach to Android architecture, modernization, testing, and maintainability.
 
 ## Architecture overview
 
-The project follows the three-layer Clean Architecture model, expressed as packages:
+The project follows a three-layer Clean Architecture model, currently expressed as packages inside a single Android module:
 
-- **`domain`** — Pure Kotlin business logic. Contains the `Joke` model, the `JokeRepository` interface, and all use cases. Has zero Android dependencies, no imports from `data.*`, and no knowledge of Retrofit, Room, or Compose. This is the contract that the rest of the app depends on.
-- **`data`** — Implementation details. Contains `JokeRepositoryImpl`, the Room database (`AppDatabase`, `JokeDao`, `JokeEntity`), the Retrofit API (`JokeApi`, `JokeDto`), and the mapping extensions that convert between layer-specific models. Depends on `domain`.
-- **`presentation`** — UI layer. Compose screens, `ViewModel`s, navigation, and theme. Depends on `domain` and consumes use cases. No direct knowledge of the data layer.
+- **`domain`** — Pure Kotlin business contracts and use cases. Contains the `Joke` domain model, `JokeRepository` interface, domain-safe result/error abstractions, and use cases. It has no Android dependency, no dependency on `data.*`, and no knowledge of Retrofit, OkHttp, Room, Koin, DTOs, entities, DAOs, or UI classes.
+- **`data`** — Infrastructure and implementation details. Contains `JokeRepositoryImpl`, the Room database (`AppDatabase`, `JokeDao`, `JokeEntity`), the Retrofit API (`JokeApi`, `JokeDto`), and mappers between data models and domain models. It owns technical exception mapping and depends on `domain`.
+- **`presentation`** — UI and state management. Contains Compose screens, `ViewModel`s, navigation, UI error mapping, and theme. It depends on `domain` through use cases and has no direct dependency on the data layer.
 
-Cross-cutting concerns (`Resource<T>` sealed class, constants, analytics logger, dependency injection wiring) live in dedicated top-level packages.
+Cross-cutting concerns such as constants, analytics logging, and dependency injection wiring live in dedicated top-level packages. Domain result types live in `domain.result` because they are part of the domain contract.
 
 ### Key architectural decisions
 
-- **Dependency inversion is real, not nominal.** ViewModels depend on use cases; use cases depend on the repository interface; the repository implementation lives in the data layer behind that interface. The domain layer literally cannot import from data.
-- **DTOs, entities, and domain models are distinct.** `JokeDto` (network), `JokeEntity` (Room), and `Joke` (domain) are separate classes with explicit mapping functions kept in the data layer. The domain never sees a `@SerializedName` or an `@Entity`.
-- **Use cases are minimal and single-purpose.** Each use case exposes exactly one `operator fun invoke` and orchestrates a single piece of business logic. The codebase currently includes seven: `GetJokeUseCase`, `GetTenJokesUseCase`, `GetJokeByIdUseCase`, `ObserveLikedJokesUseCase`, `ObserveJokeLikedStatusUseCase`, `UpsertJokeUseCase`, `DeleteAllJokesUseCase`.
-- **Koin dependency injection.** The repository uses Koin for dependency wiring while preserving the same Clean Architecture boundaries and constructor-injection patterns established during the earlier manual-DI implementation.
+- **Dependency inversion is real, not nominal.** ViewModels depend on use cases; use cases depend on the repository interface; the repository implementation lives in the data layer behind that interface.
+- **The domain layer is infrastructure-free.** Domain code does not import Retrofit, OkHttp, Room, Android, AndroidX, Koin, Java IO/network APIs, DTOs, entities, DAOs, APIs, databases, or data-layer implementations.
+- **DTOs, entities, and domain models are distinct.** `JokeDto` (network), `JokeEntity` (Room), and `Joke` (domain) are separate models with explicit mapping functions in the data layer.
+- **Domain results are domain-safe.** `Resource<T>` represents `Success` or `Error`; loading is owned by ViewModel/UI state, not by the domain result type.
+- **Technical failures stop at the data boundary.** Retrofit, HTTP, IO/network, Room, DAO, and persistence failures are caught in `JokeRepositoryImpl` and mapped to `DomainError`.
+- **Coroutine cancellation is not swallowed.** Data-layer error mapping preserves `CancellationException` propagation.
+- **Remote one-shot operations stay one-shot.** Remote repository methods are `suspend` functions returning `Resource<T>`.
+- **Observable local reads remain reactive.** Room-backed reads use `Flow<Resource<T>>` so persistence failures can be represented without leaking Room exceptions.
+- **Use cases are minimal and single-purpose.** Each use case exposes one `operator fun invoke` and delegates or orchestrates one operation without catching technical exceptions.
+- **Architecture rules are tested.** Konsist tests guard the Clean Architecture boundaries before the future module split.
+- **Koin dependency injection is used.** Koin handles dependency wiring while preserving constructor-injection patterns and Clean Architecture boundaries.
 
 ## Tech stack
 
@@ -40,16 +49,16 @@ Cross-cutting concerns (`Resource<T>` sealed class, constants, analytics logger,
 | Local storage | Room |
 | Networking | Retrofit 2, OkHttp, Gson |
 | DI | Koin |
-| Testing | JUnit 4, MockK, `kotlinx-coroutines-test`, Turbine, in-memory Room DAO tests |
+| Testing | JUnit 4, MockK, `kotlinx-coroutines-test`, Turbine, Konsist, in-memory Room DAO tests |
 | Build | Gradle Kotlin DSL with Version Catalogue (`libs.versions.toml`) |
 | Annotation processing | KSP (Room compiler) |
 
 ## Project structure
 
-```
+```text
 app/src/main/java/com/compose/chi/
-├── analytics/        # AnalyticsLogger interface + impl (class delegation example)
-├── common/           # Resource<T>, Constants
+├── analytics/        # AnalyticsLogger interface + implementation
+├── common/           # Constants
 ├── data/
 │   ├── database/     # AppDatabase, JokeDao, JokeEntity
 │   ├── remote/       # JokeApi (Retrofit), JokeDto
@@ -57,61 +66,63 @@ app/src/main/java/com/compose/chi/
 ├── di/               # KoinModules.kt
 ├── domain/
 │   ├── model/        # Joke
-│   ├── repository/   # JokeRepository (interface only)
+│   ├── repository/   # JokeRepository interface
+│   ├── result/       # Resource<T>, DomainError
 │   └── use_case/     # 7 use cases
 ├── presentation/
-│   ├── navigation/   # AppNavHost, Screen, bottom nav components
-│   ├── screens/      # 4 screens: home, ten-jokes, joke-details, my-favourites
-│   └── ui/theme/     # Compose theme, colors, typography, shapes
+│   ├── navigation/   # AppNavHost, Screen, bottom navigation components
+│   ├── screens/      # Home, ten jokes, detail, favourites
+│   ├── ui/theme/     # Compose theme, colors, typography, shapes
+│   └── util/         # DomainErrorUiMapper
 ├── ChiApplication.kt
-└── MainActivity.kt
+└── presentation/MainActivity.kt
 ```
 
 ## Features implemented
 
 The four screens cover the full architectural pipeline:
 
-* **Random Joke** — fetches one joke from the network; tappable heart icon persists the joke to Room as a favourite. The favourite state is reactively observed from the database via Flow.
-* **Ten Jokes** — fetches a list of ten jokes; tappable items navigate to the detail screen with the joke ID passed as a nav argument.
-* **Joke Details** — fetches a joke by ID using `SavedStateHandle` to retrieve the nav argument; supports liking from the detail view as well.
-* **My Favourite Jokes** — observes the Room database via Flow and displays all liked jokes; supports clearing all favourites.
+- **Random Joke** — fetches one joke from the network; the favourite state is reactively observed from Room.
+- **Ten Jokes** — fetches ten jokes, supports pull-to-refresh, navigates to detail, and exposes a retry action after loading failures.
+- **Joke Details** — fetches a joke by ID using `SavedStateHandle` navigation arguments and supports liking from the detail screen.
+- **My Favourite Jokes** — observes Room-backed favourite jokes and supports clearing all favourites.
 
-Bottom navigation, nested navigation graphs, multiple back stacks, and dark/light theme toggle are all implemented.
+Bottom navigation, nested navigation graphs, multiple back stacks, and dark/light theme toggle are implemented.
 
 ## Testing strategy
 
-Phase 4 expanded the project from sample-level testing into a meaningful regression safety net before modularization.
+The project now has a regression safety net covering behavior and architecture before modularization.
 
 The current test suite covers:
 
-- **Use cases** — all seven use cases are tested, including happy paths and error paths where relevant.
-- **Remote `Resource` flows** — `GetJokeUseCase`, `GetTenJokesUseCase`, and `GetJokeByIdUseCase` verify Loading → Success, HTTP error, and network error branches.
-- **Local/delegating use cases** — liked-jokes observation, liked-status observation, upsert, and delete-all behavior are tested for delegation and error propagation.
-- **Mappers** — DTO/entity/domain mapping is tested explicitly, including preservation of `isFavourite`.
-- **Repository implementation** — `JokeRepositoryImpl` is tested against mocked API and DAO dependencies to verify mapping, delegation, and exception propagation.
+- **Use cases** — all seven use cases are tested as delegation/orchestration units over domain-safe `Resource` values.
+- **Repository implementation** — `JokeRepositoryImpl` is tested against mocked API and DAO dependencies for remote success/error mapping, local persistence mapping, cancellation propagation, and mapper usage.
+- **Domain-safe error handling** — Retrofit, HTTP, IO/network, Room, DAO, persistence, unknown, and cancellation paths are covered at the data boundary.
+- **Mappers** — DTO/entity/domain mapping is tested explicitly, including `isFavourite` preservation.
 - **ViewModels** — all four screen ViewModels are tested with Turbine and a shared fake repository to verify StateFlow behavior.
-- **Room DAO** — instrumented tests use an in-memory Room database to verify insert, query, favourite filtering, liked-state lookup, and delete-all behavior.
+- **Room DAO** — instrumented tests use an in-memory Room database for insert, query, favourite filtering, liked-state lookup, and delete-all behavior.
+- **Architecture rules** — Konsist tests enforce domain purity, data/repository placement, use-case shape, remote API conventions, project-wide wildcard import rules, and clean-boundary restrictions.
 
 Current totals:
 
-- **47 JVM unit tests**
+- **81 JVM unit tests**
 - **5 Room DAO instrumented tests**
-- **52 tests total**
+- **86 tests total**
 
 Generated template tests were removed and replaced with meaningful coverage.
 
-A detailed testing report is available in `docs/tests/Testing.md`.
+A testing report for the expanded test safety net is available in `docs/tests/Testing.md`. This README and the changelog summarize the later architecture hardening and Konsist coverage.
 
 ## Technologies checklist
 
 | #  | Item                                                             | Status |
 | -- | ---------------------------------------------------------------- | :----: |
 | 1  | Kotlin                                                           |   ✅   |
-| 2  | Clean Architecture (3 layers)                                    |   ✅   |
+| 2  | Clean Architecture with strict domain boundaries                 |   ✅   |
 | 3  | MVVM                                                             |   ✅   |
 | 4  | Jetpack Compose + Navigation (single Activity, no Fragments)     |   ✅   |
 | 5  | REST API with OkHttp + Retrofit2                                 |   ✅   |
-| 6  | Database caching with Room (favourites persisted)                |   ✅   |
+| 6  | Database caching with Room                                       |   ✅   |
 | 7  | Use cases with dependency inversion                              |   ✅   |
 | 8  | Kotlin Coroutines + Flow + StateFlow                             |   ✅   |
 | 9  | Koin Dependency Injection                                        |   ✅   |
@@ -120,75 +131,95 @@ A detailed testing report is available in `docs/tests/Testing.md`.
 | 12 | Expanded unit tests across use cases, repository, mappers, VMs   |   ✅   |
 | 13 | Turbine-based ViewModel StateFlow tests                          |   ✅   |
 | 14 | Room DAO in-memory instrumented tests                            |   ✅   |
-| 15 | Three-module modularization (`:domain`, `:data`, `:app`)         |   ⏳   |
-| 16 | Static analysis with ktlint / Spotless / Detekt / Konsist        |   ⏳   |
-| 17 | Offline-first repository pattern                                 |   ⏳   |
-| 18 | MockWebServer API integration tests                              |   ⏳   |
-| 19 | Network connectivity monitoring                                  |   ⏳   |
-| 20 | DataStore                                                        |   ⏳   |
-| 21 | Kotlin Multiplatform exploration                                 |   ⏳   |
+| 15 | Domain-safe result/error model                                   |   ✅   |
+| 16 | Data-owned technical exception mapping                           |   ✅   |
+| 17 | Konsist architecture boundary tests                              |   ✅   |
+| 18 | Three-module modularization (`:domain`, `:data`, `:app`)         |   ⏳   |
+| 19 | Static analysis with ktlint / Spotless / Detekt                  |   ⏳   |
+| 20 | Offline-first repository pattern                                 |   ⏳   |
+| 21 | MockWebServer API integration tests                              |   ⏳   |
+| 22 | Network connectivity monitoring                                  |   ⏳   |
+| 23 | DataStore                                                        |   ⏳   |
+| 24 | Kotlin Multiplatform exploration                                 |   ⏳   |
 
 ## Roadmap
 
-The repository is modernized incrementally so each phase leaves the app buildable, reviewable, and easier to evolve. The current order is intentional: tests were expanded before modularization so future structural changes have regression protection.
+The repository is modernized incrementally so each step leaves the app buildable, reviewable, and easier to evolve. The current order is intentional: test coverage and architecture guardrails come before modularization.
 
 Completed:
 
 - **Architectural cleanup**
-    - Immutability cleanup.
-    - Repository Flow simplifications.
-    - ViewModel collector re-entry fix.
-    - Mockito removal and MockK cleanup.
+  - Immutability cleanup.
+  - Repository Flow simplifications.
+  - ViewModel collector re-entry fix.
+  - Mockito removal and MockK cleanup.
 
 - **Toolchain modernization**
-    - Kotlin 2.3.21.
-    - AGP 9.2.1 / Gradle 9.5.1.
-    - Compose BOM 2026.05.00.
-    - SDK 36.
-    - KSP and Compose compiler plugin modernization.
+  - Kotlin 2.3.21.
+  - AGP 9.2.1 / Gradle 9.5.1.
+  - Compose BOM 2026.05.00.
+  - SDK 36.
+  - KSP and Compose compiler plugin modernization.
+
+- **Android 15+ runtime migration**
+  - Edge-to-edge support.
+  - Material 3 pull-to-refresh migration.
+  - Top app bar/system inset cleanup.
 
 - **Experimental API audit**
-    - Existing Material 3 experimental opt-ins reviewed and intentionally retained where still required.
+  - Existing Material 3 experimental opt-ins reviewed and intentionally retained where still required.
 
 - **Koin migration**
-    - Manual dependency graph removed.
-    - Koin module wiring added.
-    - ViewModels moved to constructor-injected Koin creation.
-    - `SavedStateHandle` support preserved for joke details.
+  - Manual dependency graph removed.
+  - Koin module wiring added.
+  - ViewModels moved to constructor-injected Koin creation.
+  - `SavedStateHandle` support preserved for joke details.
 
 - **Expanded test safety net**
-    - Use-case tests.
-    - Mapper tests.
-    - Repository implementation tests.
-    - ViewModel StateFlow tests with Turbine.
-    - Room DAO in-memory instrumented tests.
-    - Generated example tests removed.
+  - Use-case tests.
+  - Mapper tests.
+  - Repository implementation tests.
+  - ViewModel StateFlow tests with Turbine.
+  - Room DAO in-memory instrumented tests.
+  - Generated example tests removed.
+
+- **Clean Architecture boundary hardening**
+  - Domain result types moved under `domain.result`.
+  - `Resource.Loading` removed from the domain result type.
+  - Loading moved to ViewModel/UI state.
+  - Retrofit, HTTP, IO/network, Room, DAO, and persistence failures mapped inside the data repository implementation.
+  - Use cases simplified to delegation/orchestration over domain-safe results.
+
+- **Konsist architecture guardrails**
+  - Domain, data, repository, use-case, API, and project-wide architecture tests added.
+  - Wildcard import checks added.
+  - Clean Architecture boundary regressions are now covered by unit tests.
 
 Planned:
 
 - **Three-module modularization**
-    - Split the current single app module into `:domain`, `:data`, and `:app`.
-    - Preserve the same Clean Architecture boundaries while making them enforceable at the Gradle module level.
-    - Prepare the structure for future KMP source-set separation.
+  - Split the current single app module into `:domain`, `:data`, and `:app`.
+  - Preserve the same Clean Architecture boundaries while making them enforceable at the Gradle module level.
+  - Prepare the structure for future KMP source-set separation.
 
-- **Static analysis and architecture enforcement**
-    - Add ktlint, Spotless, Detekt, and Konsist.
-    - Enforce formatting, complexity limits, and Clean Architecture dependency rules.
+- **Static analysis and formatting enforcement**
+  - Add ktlint, Spotless, and Detekt.
+  - Keep the existing Konsist architecture rules and expand only where useful.
 
 - **Offline-first repository pattern**
-    - Move repository behavior toward cached-first flows backed by Room.
-    - Emit cached data first, then refresh from the network and persist updates.
+  - Move repository behavior toward cached-first flows backed by Room.
+  - Emit cached data first, then refresh from the network and persist updates.
 
 - **Kotlin Multiplatform**
-    - Evaluate moving domain and data foundations toward shared Kotlin code.
-    - Prepare for Room KMP, Ktor networking, and shared dependency wiring.
+  - Evaluate moving domain and data foundations toward shared Kotlin code.
+  - Prepare for Room KMP, Ktor networking, and shared dependency wiring.
 
 ## Considered
 
 The following are intentionally not included to keep the architectural focus clear:
 
-* Firebase (FCM, Analytics, Crashlytics)
-* Multiple unrelated features (the project remains single-feature by design)
+- Firebase services such as FCM, Analytics, or Crashlytics.
+- Multiple unrelated features; the project remains single-feature by design.
 
 ## About
 
@@ -200,7 +231,5 @@ This repository is a deliberate teaching artifact: a compact, single-feature cod
 
 - [The Clean Architecture — Robert C. Martin (Uncle Bob)](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 - [Guide to app architecture — Android Developers](https://developer.android.com/topic/architecture)
-- [Domain layer (optional) — Android Developers](https://developer.android.com/topic/architecture/domain-layer)
-- [Testing a Flow — Android Developers](https://developer.android.com/kotlin/flow/test)
-
-#
+- [Domain layer — Android Developers](https://developer.android.com/topic/architecture/domain-layer)
+- [Testing Kotlin flows on Android — Android Developers](https://developer.android.com/kotlin/flow/test)
