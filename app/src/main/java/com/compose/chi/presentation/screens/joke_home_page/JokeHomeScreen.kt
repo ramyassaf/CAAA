@@ -92,15 +92,30 @@ fun JokeHomeScreen(
                 )
             }
             if (state.error.isNotBlank()) {
-                Text(
-                    text = state.error,
-                    color = MaterialTheme.colorScheme.error,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
+                Column(
+                    modifier = Modifier.fillMaxWidth()
                         .padding(horizontal = 20.dp)
-                        .align(Alignment.Center)
-                )
+                        .align(Alignment.Center),
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = state.error,
+                        color = MaterialTheme.colorScheme.error,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = {viewModel.getJoke()},
+                        shape = ShapesRoundedCorner.large,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "Reload"
+                        )
+                    }
+                }
             }
             if (state.isLoading) {
                 JokeHomeScreenContent(joke = null, true, {}, {}, {})

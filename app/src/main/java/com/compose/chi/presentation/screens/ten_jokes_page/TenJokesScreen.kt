@@ -1,13 +1,18 @@
 package com.compose.chi.presentation.screens.ten_jokes_page
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -29,6 +34,7 @@ import com.compose.chi.presentation.navigation.Screen
 import com.compose.chi.presentation.navigation.components.AppTopAppBar
 import com.compose.chi.presentation.screens.ten_jokes_page.components.JokeListItem
 import com.compose.chi.presentation.ui.theme.CHITheme
+import com.compose.chi.presentation.ui.theme.ShapesRoundedCorner
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,15 +78,30 @@ fun TenJokesScreen(
             }
 
             if (state.error.isNotBlank()) {
-                Text(
-                    text = state.error,
-                    color = MaterialTheme.colorScheme.error,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
+                Column(
+                    modifier = Modifier.fillMaxWidth()
                         .padding(horizontal = 20.dp)
-                        .align(Alignment.Center)
-                )
+                        .align(Alignment.Center),
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = state.error,
+                        color = MaterialTheme.colorScheme.error,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = {viewModel.getTenJokes()},
+                        shape = ShapesRoundedCorner.large,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "Reload"
+                        )
+                    }
+                }
             }
         }
     }
