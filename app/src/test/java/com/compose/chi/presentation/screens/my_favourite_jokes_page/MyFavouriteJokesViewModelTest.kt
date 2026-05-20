@@ -3,6 +3,8 @@
 package com.compose.chi.presentation.screens.my_favourite_jokes_page
 
 import app.cash.turbine.test
+import com.compose.chi.domain.result.DomainError
+import com.compose.chi.domain.result.Resource
 import com.compose.chi.domain.use_case.DeleteAllJokesUseCase
 import com.compose.chi.domain.use_case.ObserveLikedJokesUseCase
 import com.compose.chi.testing.FakeJokeRepository
@@ -11,6 +13,8 @@ import com.compose.chi.testing.TestJokes
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -56,6 +60,43 @@ class MyFavouriteJokesViewModelTest {
             advanceUntilIdle()
 
             assertEquals(1, repo.deleteAllCallCount)
+        }
+
+    @Test
+    fun `liked jokes persistence error updates state with non-blank error`() =
+        runTest(mainDispatcherRule.testDispatcher) {
+            val repo = FakeJokeRepository().apply {
+                likedJokesError = DomainError.Persistence
+            }
+            val vm = viewModel(repo)
+
+            vm.state.test {
+                assertEquals(MyFavouriteJokesState(), awaitItem())
+                val errorState = awaitItem()
+                assertNotNull(errorState.error)
+                assertTrue("error must be non-blank", errorState.error.isNotBlank())
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
+    fun `deleteAll persistence error updates state with non-blank error`() =
+        runTest(mainDispatcherRule.testDispatcher) {
+            val repo = FakeJokeRepository().apply {
+                deleteAllResource = Resource.Error(DomainError.Persistence)
+            }
+            val vm = viewModel(repo)
+
+            vm.state.test {
+                assertEquals(MyFavouriteJokesState(), awaitItem())
+
+                vm.deleteAllItemsFromDb()
+                val errorState = awaitItem()
+
+                assertNotNull(errorState.error)
+                assertTrue("error must be non-blank", errorState.error.isNotBlank())
+                cancelAndIgnoreRemainingEvents()
+            }
         }
 
     @Test

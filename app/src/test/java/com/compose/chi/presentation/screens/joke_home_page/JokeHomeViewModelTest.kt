@@ -114,4 +114,22 @@ class JokeHomeViewModelTest {
             assertNotNull(state.error)
             assertTrue("error must be non-blank", state.error.isNotBlank())
         }
+
+    @Test
+    fun `persistence error from UpsertJokeUseCase produces state with non-blank error`() =
+        runTest(mainDispatcherRule.testDispatcher) {
+            val repo = FakeJokeRepository().apply {
+                jokeResource = Resource.Success(TestJokes.joke1)
+                upsertResource = Resource.Error(DomainError.Persistence)
+            }
+            val vm = viewModel(repo)
+            advanceUntilIdle()
+
+            vm.toggleLikeJokeInDb(TestJokes.joke1)
+            advanceUntilIdle()
+
+            val state = vm.state.value
+            assertNotNull(state.error)
+            assertTrue("error must be non-blank", state.error.isNotBlank())
+        }
 }

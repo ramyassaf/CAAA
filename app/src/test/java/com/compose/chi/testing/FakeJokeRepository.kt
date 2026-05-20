@@ -2,10 +2,12 @@ package com.compose.chi.testing
 
 import com.compose.chi.domain.model.Joke
 import com.compose.chi.domain.repository.JokeRepository
+import com.compose.chi.domain.result.DomainError
 import com.compose.chi.domain.result.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 /**
@@ -27,8 +29,10 @@ class FakeJokeRepository : JokeRepository {
     private val likedJokes = MutableStateFlow<List<Joke>>(emptyList())
     private val likedStatuses = MutableStateFlow<Map<Int, Boolean>>(emptyMap())
 
-    var upsertError: Throwable? = null
-    var deleteAllError: Throwable? = null
+    var likedJokesError: DomainError? = null
+    var likedStatusError: DomainError? = null
+    var upsertResource: Resource<Unit> = Resource.Success(Unit)
+    var deleteAllResource: Resource<Unit> = Resource.Success(Unit)
 
     val upsertedJokes: MutableList<Joke> = mutableListOf()
     var deleteAllCallCount: Int = 0
@@ -50,19 +54,34 @@ class FakeJokeRepository : JokeRepository {
         return jokeByIdResource
     }
 
-    override fun observeLikedJokes(): Flow<List<Joke>> = likedJokes.asStateFlow()
+    override fun observeLikedJokes(): Flow<Resource<List<Joke>>> =
+        likedJokesError?.let { error ->
+            flowOf(Resource.Error(error))
+        } ?: likedJokes.asStateFlow().map { Resource.Success(it) }
 
-    override fun observeJokeLikedStatus(jokeId: Int): Flow<Boolean> =
-        likedStatuses.asStateFlow().map { it[jokeId] ?: false }
+    override fun observeJokeLikedStatus(jokeId: Int): Flow<Resource<Boolean>> =
+        likedStatusError?.let { error ->
+            flowOf(Resource.Error(error))
+        } ?: likedStatuses.asStateFlow().map { Resource.Success(it[jokeId] ?: false) }
 
-    override suspend fun upsertJoke(joke: Joke) {
-        upsertError?.let { throw it }
-        upsertedJokes.add(joke)
+    override suspend fun upsertJoke(joke: Joke): Resource<Unit> {
+        return when (val result = upsertResource) {
+            is Resource.Success -> {
+                upsertedJokes.add(joke)
+                result
+            }
+            is Resource.Error -> result
+        }
     }
 
-    override suspend fun deleteAllJokes() {
-        deleteAllError?.let { throw it }
+    override suspend fun deleteAllJokes(): Resource<Unit> {
         deleteAllCallCount += 1
-        likedJokes.value = emptyList()
+        return when (val result = deleteAllResource) {
+            is Resource.Success -> {
+                likedJokes.value = emptyList()
+                result
+            }
+            is Resource.Error -> result
+        }
     }
 }

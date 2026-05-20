@@ -15,11 +15,11 @@ interface JokeRepository {
     suspend fun getJokeById(jokeId: String): Resource<Joke>
 
     // Local (db)
-    fun observeLikedJokes(): Flow<List<Joke>>
+    fun observeLikedJokes(): Flow<Resource<List<Joke>>>
 
-    fun observeJokeLikedStatus(jokeId: Int): Flow<Boolean>
+    fun observeJokeLikedStatus(jokeId: Int): Flow<Resource<Boolean>>
 
-    suspend fun upsertJoke(joke: Joke)
+    suspend fun upsertJoke(joke: Joke): Resource<Unit>
 
-    suspend fun deleteAllJokes()
+    suspend fun deleteAllJokes(): Resource<Unit>
 }

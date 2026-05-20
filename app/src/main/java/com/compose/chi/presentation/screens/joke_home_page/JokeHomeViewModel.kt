@@ -39,12 +39,22 @@ class JokeHomeViewModel(
                     val joke = result.data
                     // Collect the flow from ObserveJokeLikedStatusUseCase and consume its values each time it changes,
                     // then update _state with the new isFavourite value
-                    observeJokeLikedStatusUseCase(joke.id).collect { isLiked ->
-                        if (isLiked) {
-                            val jokeCopyFav = joke.copy(isFavourite = true)
-                            _state.update { JokeHomeState(joke = jokeCopyFav) }
-                        } else {
-                            _state.update { JokeHomeState(joke = joke) }
+                    observeJokeLikedStatusUseCase(joke.id).collect { likedStatusResult ->
+                        when (likedStatusResult) {
+                            is Resource.Success -> {
+                                if (likedStatusResult.data) {
+                                    val jokeCopyFav = joke.copy(isFavourite = true)
+                                    _state.update { JokeHomeState(joke = jokeCopyFav) }
+                                } else {
+                                    _state.update { JokeHomeState(joke = joke) }
+                                }
+                            }
+
+                            is Resource.Error -> {
+                                _state.update {
+                                    it.copy(error = likedStatusResult.error.toUiMessage())
+                                }
+                            }
                         }
                     }
                 }
@@ -68,7 +78,12 @@ class JokeHomeViewModel(
         viewModelScope.launch {
             _state.update { JokeHomeState(joke = jokeCopyFav) }
 
-            upsertJokeUseCase(jokeCopyFav)
+            when (val result = upsertJokeUseCase(jokeCopyFav)) {
+                is Resource.Success -> Unit
+                is Resource.Error -> {
+                    _state.update { it.copy(error = result.error.toUiMessage()) }
+                }
+            }
         }
     }
 }

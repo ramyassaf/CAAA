@@ -116,6 +116,24 @@ class JokeDetailsViewModelTest {
         }
 
     @Test
+    fun `persistence error from UpsertJokeUseCase produces state with non-blank error`() =
+        runTest(mainDispatcherRule.testDispatcher) {
+            val repo = FakeJokeRepository().apply {
+                jokeByIdResource = Resource.Success(TestJokes.joke1)
+                upsertResource = Resource.Error(DomainError.Persistence)
+            }
+            val vm = viewModel(repo)
+            advanceUntilIdle()
+
+            vm.toggleLikeJokeInDb(TestJokes.joke1)
+            advanceUntilIdle()
+
+            val state = vm.state.value
+            assertNotNull(state.error)
+            assertTrue("error must be non-blank", state.error.isNotBlank())
+        }
+
+    @Test
     fun `missing jokeId leaves state at default and does not call remote fetch`() =
         runTest(mainDispatcherRule.testDispatcher) {
             val repo = FakeJokeRepository().apply {

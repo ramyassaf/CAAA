@@ -4,6 +4,7 @@ import app.cash.turbine.test
 import com.compose.chi.data.database.JokeDao
 import com.compose.chi.data.database.model.JokeEntity
 import com.compose.chi.data.remote.JokeApi
+import com.compose.chi.domain.model.Joke
 import com.compose.chi.domain.result.DomainError
 import com.compose.chi.domain.result.Resource
 import com.compose.chi.testing.TestJokes
@@ -14,6 +15,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaType
@@ -145,7 +147,7 @@ class JokeRepositoryImplTest {
 
         repository.observeLikedJokes().test {
             val emitted = awaitItem()
-            assertEquals(entities.map { it.toJoke() }, emitted)
+            assertEquals(Resource.Success(entities.map { it.toJoke() }), emitted)
             awaitComplete()
         }
         verify(exactly = 1) { dao.observeAllLikedJokes() }
@@ -160,9 +162,9 @@ class JokeRepositoryImplTest {
         every { dao.observeAllLikedJokes() } returns flowOf(entities)
 
         repository.observeLikedJokes().test {
-            val emitted = awaitItem()
+            val emitted = awaitItem() as Resource.Success<List<Joke>>
             assertTrue("every liked joke must report isFavourite = true",
-                emitted.isNotEmpty() && emitted.all { it.isFavourite })
+                emitted.data.isNotEmpty() && emitted.data.all { it.isFavourite })
             awaitComplete()
         }
     }
@@ -173,18 +175,47 @@ class JokeRepositoryImplTest {
         every { dao.observeFavoriteJoke(jokeId) } returns flowOf(true)
 
         repository.observeJokeLikedStatus(jokeId).test {
-            assertEquals(true, awaitItem())
+            assertEquals(Resource.Success(true), awaitItem())
             awaitComplete()
         }
         verify(exactly = 1) { dao.observeFavoriteJoke(jokeId) }
     }
 
     @Test
-    fun `upsertJoke maps domain joke to entity and delegates to DAO`() = runTest {
+    fun `observeLikedJokes maps DAO flow failure to Persistence error`() = runTest {
+        every { dao.observeAllLikedJokes() } returns flow { throw IllegalStateException("db") }
+
+        repository.observeLikedJokes().test {
+            assertEquals(Resource.Error(DomainError.Persistence), awaitItem())
+            awaitComplete()
+        }
+    }
+
+    @Test
+    fun `observeJokeLikedStatus maps DAO flow failure to Persistence error`() = runTest {
+        every { dao.observeFavoriteJoke(5) } returns flow { throw IllegalStateException("db") }
+
+        repository.observeJokeLikedStatus(5).test {
+            assertEquals(Resource.Error(DomainError.Persistence), awaitItem())
+            awaitComplete()
+        }
+    }
+
+    @Test
+    fun `observeLikedJokes rethrows CancellationException`() = runTest {
+        every { dao.observeAllLikedJokes() } returns flow { throw CancellationException("cancelled") }
+
+        repository.observeLikedJokes().test {
+            assertTrue(awaitError() is CancellationException)
+        }
+    }
+
+    @Test
+    fun `upsertJoke maps domain joke to entity and returns Success`() = runTest {
         val joke = TestJokes.joke1Favourite
         coEvery { dao.upsertJoke(any()) } just Runs
 
-        repository.upsertJoke(joke)
+        val result = repository.upsertJoke(joke)
 
         val expectedEntity = JokeEntity(
             id = joke.id,
@@ -193,16 +224,48 @@ class JokeRepositoryImplTest {
             type = joke.type,
             isFavourite = joke.isFavourite
         )
+        assertEquals(Resource.Success(Unit), result)
         coVerify(exactly = 1) { dao.upsertJoke(expectedEntity) }
     }
 
     @Test
-    fun `deleteAllJokes delegates to DAO`() = runTest {
+    fun `upsertJoke maps DAO failure to Persistence error`() = runTest {
+        coEvery { dao.upsertJoke(any()) } throws IllegalStateException("write failed")
+
+        val result = repository.upsertJoke(TestJokes.joke1)
+
+        assertEquals(Resource.Error(DomainError.Persistence), result)
+    }
+
+    @Test
+    fun `upsertJoke rethrows CancellationException`() = runTest {
+        coEvery { dao.upsertJoke(any()) } throws CancellationException("cancelled")
+
+        try {
+            repository.upsertJoke(TestJokes.joke1)
+            fail("Expected CancellationException")
+        } catch (e: CancellationException) {
+            assertEquals("cancelled", e.message)
+        }
+    }
+
+    @Test
+    fun `deleteAllJokes delegates to DAO and returns Success`() = runTest {
         coEvery { dao.deleteAllJokes() } just Runs
 
-        repository.deleteAllJokes()
+        val result = repository.deleteAllJokes()
 
+        assertEquals(Resource.Success(Unit), result)
         coVerify(exactly = 1) { dao.deleteAllJokes() }
+    }
+
+    @Test
+    fun `deleteAllJokes maps DAO failure to Persistence error`() = runTest {
+        coEvery { dao.deleteAllJokes() } throws IllegalStateException("delete failed")
+
+        val result = repository.deleteAllJokes()
+
+        assertEquals(Resource.Error(DomainError.Persistence), result)
     }
 
     private fun httpException(code: Int): HttpException =
