@@ -39,7 +39,9 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.compose.chi.domain.model.Joke
 import com.compose.chi.presentation.navigation.Screen
 import com.compose.chi.presentation.navigation.components.AppTopAppBar
-import com.compose.chi.presentation.ui.theme.*
+import com.compose.chi.presentation.ui.theme.CHITheme
+import com.compose.chi.presentation.ui.theme.ShapesRoundedCorner
+import com.compose.chi.presentation.ui.theme.content_padding
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
