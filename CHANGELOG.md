@@ -2,6 +2,29 @@
 
 All notable changes to CAAA are documented here.
 
+## May 2026 - CI verification checkpoint
+
+### Added
+
+- GitHub Actions CI workflow for pull requests and pushes targeting `dev` and `main`.
+- Manual workflow dispatch for on-demand verification.
+
+### Changed
+
+- The repository now verifies the core safety net automatically with:
+  - `./gradlew test`
+  - `./gradlew assembleDebug`
+- GitHub Actions checkout and Java setup actions were updated to current major versions.
+
+### Fixed
+
+- Corrected the production-source TODO architecture rule so it scans production Kotlin sources reliably across platforms.
+
+### Notes
+
+- CI is intentionally limited to JVM tests, Konsist architecture tests, and debug build assembly.
+- Room DAO instrumented tests remain emulator/device-based manual verification.
+
 ## May 2026 - Clean Architecture boundary hardening
 
 ### Added
@@ -50,7 +73,7 @@ All notable changes to CAAA are documented here.
 - 5 Room DAO instrumented tests.
 - 86 tests total.
 
-## May 2026 - Test expansion 
+## May 2026 - Test expansion
 
 ### Added
 
