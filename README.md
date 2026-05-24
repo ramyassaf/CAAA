@@ -1,6 +1,6 @@
 # CAAA — Clean Architecture Jetpack Compose Android Skeleton
 
-> **Status:** Actively maintained and continuously modernized. 2026 updates include Android runtime/toolchain modernization, migration from manual dependency injection to Koin, expanded test coverage, strict Clean Architecture boundary hardening, and Konsist architecture guardrails. The next major milestone is three-module modularization (`:domain`, `:data`, `:app`) as preparation for future Kotlin Multiplatform work.
+> **Status:** Actively maintained and continuously modernized. 2026 updates include Android runtime/toolchain modernization, migration from manual dependency injection to Koin, expanded test coverage, strict Clean Architecture boundary hardening, Konsist architecture guardrails, and GitHub Actions CI verification. The next major milestone is three-module modularization (`:domain`, `:data`, `:app`) as preparation for future Kotlin Multiplatform work.
 
 ## What this project is
 
@@ -50,6 +50,7 @@ Cross-cutting concerns such as constants, analytics logging, and dependency inje
 | Networking | Retrofit 2, OkHttp, Gson |
 | DI | Koin |
 | Testing | JUnit 4, MockK, `kotlinx-coroutines-test`, Turbine, Konsist, in-memory Room DAO tests |
+| CI | GitHub Actions (`./gradlew test`, `./gradlew assembleDebug`) |
 | Build | Gradle Kotlin DSL with Version Catalogue (`libs.versions.toml`) |
 | Annotation processing | KSP (Room compiler) |
 
@@ -111,7 +112,9 @@ Current totals:
 
 Generated template tests were removed and replaced with meaningful coverage.
 
-A testing report for the expanded test safety net is available in `docs/tests/Testing.md`. This README and the changelog summarize the later architecture hardening and Konsist coverage.
+GitHub Actions verifies the core safety net on pull requests and pushes targeting `dev` and `main`, with manual dispatch available when needed. The CI workflow runs `./gradlew test` and `./gradlew assembleDebug`, covering JVM tests, Konsist architecture checks, and debug build assembly.
+
+Detailed testing documentation is available in `docs/tests/Testing.md`, including the test layout, shared helpers, architecture checks, CI verification, and guidance for adding new tests.
 
 ## Technologies checklist
 
@@ -134,13 +137,14 @@ A testing report for the expanded test safety net is available in `docs/tests/Te
 | 15 | Domain-safe result/error model                                   |   ✅   |
 | 16 | Data-owned technical exception mapping                           |   ✅   |
 | 17 | Konsist architecture boundary tests                              |   ✅   |
-| 18 | Three-module modularization (`:domain`, `:data`, `:app`)         |   ⏳   |
-| 19 | Static analysis with ktlint / Spotless / Detekt                  |   ⏳   |
-| 20 | Offline-first repository pattern                                 |   ⏳   |
-| 21 | MockWebServer API integration tests                              |   ⏳   |
-| 22 | Network connectivity monitoring                                  |   ⏳   |
-| 23 | DataStore                                                        |   ⏳   |
-| 24 | Kotlin Multiplatform exploration                                 |   ⏳   |
+| 18 | GitHub Actions CI verification                                   |   ✅   |
+| 19 | Three-module modularization (`:domain`, `:data`, `:app`)         |   ⏳   |
+| 20 | Static analysis with ktlint / Spotless / Detekt                  |   ⏳   |
+| 21 | Offline-first repository pattern                                 |   ⏳   |
+| 22 | MockWebServer API integration tests                              |   ⏳   |
+| 23 | Network connectivity monitoring                                  |   ⏳   |
+| 24 | DataStore                                                        |   ⏳   |
+| 25 | Kotlin Multiplatform exploration                                 |   ⏳   |
 
 ## Roadmap
 
@@ -194,6 +198,12 @@ Completed:
   - Domain, data, repository, use-case, API, and project-wide architecture tests added.
   - Wildcard import checks added.
   - Clean Architecture boundary regressions are now covered by unit tests.
+
+- **CI verification checkpoint**
+  - GitHub Actions verifies pull requests and pushes targeting `dev` and `main`.
+  - Manual workflow dispatch is available for on-demand verification.
+  - CI runs `./gradlew test` and `./gradlew assembleDebug`.
+  - The production-source TODO architecture rule was corrected to scan production sources reliably across platforms.
 
 Planned:
 
