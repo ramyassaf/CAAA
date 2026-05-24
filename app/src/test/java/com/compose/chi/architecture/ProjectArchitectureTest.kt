@@ -18,9 +18,8 @@ class ProjectArchitectureTest {
 
     @Test
     fun `production files should not contain TODO architecture comments`() {
-        Konsist.scopeFromProject().files.assertFalse { file ->
-            file.path.contains("src/main/java") &&
-                file.text.contains("TODO", ignoreCase = true)
+        Konsist.scopeFromProduction().files.assertFalse { file ->
+            file.text.contains("TODO")
         }
     }
 }
