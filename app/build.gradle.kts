@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.chi"
+    namespace = "com.compose.chi"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.chi"
+        applicationId = "com.compose.chi"
         minSdk = 24
         targetSdk = 36
         versionCode = 1

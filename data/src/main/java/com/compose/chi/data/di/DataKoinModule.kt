@@ -2,6 +2,7 @@ package com.compose.chi.data.di
 
 import androidx.room.Room
 import com.compose.chi.data.database.AppDatabase
+import com.compose.chi.data.remote.BASE_URL_JOKES
 import com.compose.chi.data.remote.JokeApi
 import com.compose.chi.data.repository.JokeRepositoryImpl
 import com.compose.chi.domain.repository.JokeRepository
@@ -11,8 +12,6 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-
-private const val BASE_URL_JOKES = "https://official-joke-api.appspot.com"
 
 val dataKoinModule = module {
     single {
