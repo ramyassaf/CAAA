@@ -1,6 +1,7 @@
 package com.compose.chi
 
 import android.app.Application
+import com.compose.chi.data.di.dataKoinModule
 import com.compose.chi.di.appKoinModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -14,7 +15,7 @@ class ChiApplication : Application() {
         startKoin {
             androidLogger()
             androidContext(this@ChiApplication)
-            modules(appKoinModule)
+            modules(dataKoinModule, appKoinModule)
         }
     }
 

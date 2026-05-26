@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.devToolsKsp)
 }
 
 android {
@@ -45,6 +44,9 @@ android {
 
 dependencies {
 
+    implementation(project(":domain"))
+    implementation(project(":data"))
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -59,12 +61,6 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    // Compose UI test deps removed alongside the generated ExampleInstrumentedTest —
-    // no remaining androidTest consumer, and they pulled a strict coroutines BOM that
-    // forced version conflicts. kotlinx-coroutines-test was likewise dropped: the DAO
-    // tests use runBlocking from coroutines-core (already on the classpath), since
-    // androidx test deps publish a strict kotlinx-coroutines-bom 1.9.0 constraint
-    // that makes runTest 1.11 fail at runtime with a NoSuchMethodError on runBlockingK.
     debugImplementation(libs.androidx.ui.tooling)
 
     testImplementation(libs.mockk) // MockK has better support than Mockito for Kotlin features, including coroutines.
@@ -86,14 +82,4 @@ dependencies {
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
-
-    // Retrofit
-    implementation(libs.retrofit)
-    implementation(libs.converter.gson)
-    implementation(libs.okhttp)
-    implementation(libs.logging.interceptor)
-
-    // Room
-    implementation(libs.androidx.room.ktx)
-    ksp(libs.androidx.room.compiler)
 }
