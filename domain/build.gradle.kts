@@ -1,5 +1,6 @@
 plugins {
     id("org.jetbrains.kotlin.jvm")
+    `java-test-fixtures`
 }
 
 java {
@@ -13,6 +14,9 @@ kotlin {
 
 dependencies {
     implementation(libs.kotlinx.coroutines.core)
+
+    // FakeJokeRepository in testFixtures uses Flow / MutableStateFlow.
+    testFixturesImplementation(libs.kotlinx.coroutines.core)
 
     testImplementation(libs.junit)
     testImplementation(libs.mockk)

@@ -2,6 +2,13 @@ package com.compose.chi.testing
 
 import com.compose.chi.domain.model.Joke
 
+/**
+ * Canonical [Joke] samples shared across module tests.
+ *
+ * Lives in `:domain` test fixtures so any module on the testFixtures
+ * classpath can reuse the same values. Data-layer counterparts (DTO /
+ * Entity samples) are built on top of these in `:data`.
+ */
 object TestJokes {
 
     val joke1: Joke = Joke(

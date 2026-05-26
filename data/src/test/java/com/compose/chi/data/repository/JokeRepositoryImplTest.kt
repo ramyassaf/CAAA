@@ -7,6 +7,8 @@ import com.compose.chi.data.remote.JokeApi
 import com.compose.chi.domain.model.Joke
 import com.compose.chi.domain.result.DomainError
 import com.compose.chi.domain.result.Resource
+import com.compose.chi.testing.JokeDtos
+import com.compose.chi.testing.JokeEntities
 import com.compose.chi.testing.TestJokes
 import io.mockk.Runs
 import io.mockk.coEvery
@@ -47,17 +49,17 @@ class JokeRepositoryImplTest {
 
     @Test
     fun `getJoke returns Success with mapped domain joke`() = runTest {
-        coEvery { api.getJoke() } returns TestJokes.jokeDto1
+        coEvery { api.getJoke() } returns JokeDtos.first
 
         val result = repository.getJoke()
 
-        assertEquals(Resource.Success(TestJokes.jokeDto1.toJoke()), result)
+        assertEquals(Resource.Success(JokeDtos.first.toJoke()), result)
         coVerify(exactly = 1) { api.getJoke() }
     }
 
     @Test
     fun `getTenJokes returns Success with mapped domain jokes`() = runTest {
-        val dtos = TestJokes.tenJokeDtos()
+        val dtos = JokeDtos.ten()
         coEvery { api.getTenJokes() } returns dtos
 
         val result = repository.getTenJokes()
@@ -69,7 +71,7 @@ class JokeRepositoryImplTest {
     @Test
     fun `getJokeById returns Success and passes the id to the API`() = runTest {
         val jokeId = "42"
-        val dto = TestJokes.jokeDto1.copy(id = 42)
+        val dto = JokeDtos.first.copy(id = 42)
         coEvery { api.getJokeById(jokeId) } returns dto
 
         val result = repository.getJokeById(jokeId)
@@ -140,8 +142,8 @@ class JokeRepositoryImplTest {
     @Test
     fun `observeLikedJokes maps DAO entities into domain jokes`() = runTest {
         val entities = listOf(
-            TestJokes.jokeEntity1Favourite,
-            TestJokes.jokeEntity2Favourite
+            JokeEntities.firstFavourite,
+            JokeEntities.secondFavourite
         )
         every { dao.observeAllLikedJokes() } returns flowOf(entities)
 
@@ -156,8 +158,8 @@ class JokeRepositoryImplTest {
     @Test
     fun `observeLikedJokes preserves isFavourite true on every emitted joke`() = runTest {
         val entities = listOf(
-            TestJokes.jokeEntity1Favourite,
-            TestJokes.jokeEntity2Favourite
+            JokeEntities.firstFavourite,
+            JokeEntities.secondFavourite
         )
         every { dao.observeAllLikedJokes() } returns flowOf(entities)
 

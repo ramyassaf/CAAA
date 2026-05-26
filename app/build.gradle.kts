@@ -63,6 +63,7 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     debugImplementation(libs.androidx.ui.tooling)
 
+    testImplementation(testFixtures(project(":domain")))
     testImplementation(libs.mockk) // MockK has better support than Mockito for Kotlin features, including coroutines.
     testImplementation(libs.konsist)
     testImplementation(libs.kotlinx.coroutines.test)

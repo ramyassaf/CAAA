@@ -17,6 +17,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
+    testFixtures {
+        enable = true
+    }
 }
 
 dependencies {
@@ -36,7 +40,11 @@ dependencies {
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.android)
 
+    // Test fixtures (data-specific Dto/Entity factories) reuse :domain Joke factories
+    testFixturesImplementation(testFixtures(project(":domain")))
+
     // Unit tests
+    testImplementation(testFixtures(project(":domain")))
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
     testImplementation(libs.turbine)
