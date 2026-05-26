@@ -2,7 +2,10 @@ package com.compose.chi.architecture
 
 import com.lemonappdev.konsist.api.Konsist
 import com.lemonappdev.konsist.api.ext.list.imports
+import com.lemonappdev.konsist.api.ext.list.interfaceDeclarations
+import com.lemonappdev.konsist.api.ext.list.parentInterfaces
 import com.lemonappdev.konsist.api.ext.list.properties
+import com.lemonappdev.konsist.api.ext.list.sourceDeclarations
 import com.lemonappdev.konsist.api.ext.list.withNameEndingWith
 import com.lemonappdev.konsist.api.ext.list.withPackage
 import com.lemonappdev.konsist.api.ext.list.withPath
@@ -22,6 +25,14 @@ class DataLayerArchitectureTest {
         .classes()
         .withPath("..src/main/java..")
         .withNameEndingWith("Entity")
+    private val apiInterfaces = Konsist.scopeFromProject()
+        .interfaces()
+        .withPath("..src/main/java..")
+        .withNameEndingWith("Api")
+    private val repositoryImplementations = Konsist.scopeFromProject()
+        .classes()
+        .withPath("..src/main/java..")
+        .withNameEndingWith("RepositoryImpl")
 
     @Test
     fun `data layer must not depend on presentation`() {
@@ -59,5 +70,32 @@ class DataLayerArchitectureTest {
                 file.text.contains("IOException") ||
                 file.text.contains("DomainError.Persistence")
         }
+    }
+
+    @Test
+    fun `interfaces ending with Api should reside in data remote package`() {
+        apiInterfaces.assertTrue { it.resideInPackage("..data.remote..") }
+    }
+
+    @Test
+    fun `Retrofit annotations should be imported only from data remote package`() {
+        productionFiles.assertTrue { file ->
+            !file.imports.any { import -> import.name.startsWith("retrofit2.http.") } ||
+                file.text.startsWith("package com.compose.chi.data.remote")
+        }
+    }
+
+    @Test
+    fun `classes ending with RepositoryImpl should reside in data repository package`() {
+        repositoryImplementations.assertTrue { it.resideInPackage("..data.repository..") }
+    }
+
+    @Test
+    fun `repository implementations should implement a domain repository interface`() {
+        repositoryImplementations
+            .parentInterfaces()
+            .sourceDeclarations()
+            .interfaceDeclarations()
+            .assertTrue { it.resideInPackage("..domain.repository..") }
     }
 }

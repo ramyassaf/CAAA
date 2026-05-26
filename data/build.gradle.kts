@@ -46,6 +46,7 @@ dependencies {
     // Unit tests
     testImplementation(testFixtures(project(":domain")))
     testImplementation(libs.junit)
+    testImplementation(libs.konsist)
     testImplementation(libs.mockk)
     testImplementation(libs.turbine)
     testImplementation(libs.kotlinx.coroutines.test)
