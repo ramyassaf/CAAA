@@ -18,10 +18,10 @@ class DomainLayerArchitectureTest {
         .classes()
         .withPath("..src/main/java..")
         .withPackage("..domain.model..")
-    private val domainRepositories = Konsist.scopeFromProject()
+    private val productionInterfaces = Konsist.scopeFromProject()
         .interfaces()
         .withPath("..src/main/java..")
-        .withPackage("..domain.repository..")
+    private val apiInterfaces = productionInterfaces.withNameEndingWith("Api")
 
     private val prohibitedDomainImports = setOf(
         "android.",
@@ -58,10 +58,15 @@ class DomainLayerArchitectureTest {
     }
 
     @Test
-    fun `domain repository interfaces should reside in domain repository package`() {
-        domainRepositories.withNameEndingWith("Repository").assertTrue {
+    fun `repository contracts (any interface ending with Repository) should reside in domain repository package`() {
+        productionInterfaces.withNameEndingWith("Repository").assertTrue {
             it.resideInPackage("..domain.repository..")
         }
+    }
+
+    @Test
+    fun `domain must not contain classes or interfaces ending with Api`() {
+        apiInterfaces.assertFalse { it.resideInPackage("..domain..") }
     }
 
     @Test

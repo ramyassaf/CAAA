@@ -1,6 +1,6 @@
 # CAAA — Clean Architecture Jetpack Compose Android Skeleton
 
-> **Status:** Actively maintained and continuously modernized. 2026 updates include Android runtime/toolchain modernization, migration from manual dependency injection to Koin, expanded test coverage, strict Clean Architecture boundary hardening, Konsist architecture guardrails, and GitHub Actions CI verification. The next major milestone is three-module modularization (`:domain`, `:data`, `:app`) as preparation for future Kotlin Multiplatform work.
+> **Status:** Actively maintained and continuously modernized. The project now uses a three-module Clean Architecture setup (`:domain`, `:data`, `:app`) with Android toolchain/runtime modernization, Koin dependency injection, expanded test coverage, Konsist architecture guardrails, and GitHub Actions CI verification. The next major milestone is Phase 6: static analysis and formatting enforcement with ktlint, Spotless, and Detekt.
 
 ## What this project is
 
@@ -16,18 +16,35 @@ The codebase is intended to serve as:
 
 ## Architecture overview
 
-The project follows a three-layer Clean Architecture model, currently expressed as packages inside a single Android module:
+The project follows a three-layer Clean Architecture model enforced by Gradle modules:
 
-- **`domain`** — Pure Kotlin business contracts and use cases. Contains the `Joke` domain model, `JokeRepository` interface, domain-safe result/error abstractions, and use cases. It has no Android dependency, no dependency on `data.*`, and no knowledge of Retrofit, OkHttp, Room, Koin, DTOs, entities, DAOs, or UI classes.
-- **`data`** — Infrastructure and implementation details. Contains `JokeRepositoryImpl`, the Room database (`AppDatabase`, `JokeDao`, `JokeEntity`), the Retrofit API (`JokeApi`, `JokeDto`), and mappers between data models and domain models. It owns technical exception mapping and depends on `domain`.
-- **`presentation`** — UI and state management. Contains Compose screens, `ViewModel`s, navigation, UI error mapping, and theme. It depends on `domain` through use cases and has no direct dependency on the data layer.
+```text
+:app  ───────► :domain
+  │              ▲
+  └───────► :data
+             │
+             └────► :domain
+```
+At the Gradle level, `:app` depends on `:data` because the Android application module owns app startup and Koin composition. At the Clean Architecture layer level, presentation still follows the stricter dependency rule:
 
-Cross-cutting concerns such as constants, analytics logging, and dependency injection wiring live in dedicated top-level packages. Domain result types live in `domain.result` because they are part of the domain contract.
+```text
+presentation ─────► domain ◄───── data
+   UI + VM          use cases       repository impl
+   UI state         contracts       Room / Retrofit
+```
+
+- **`:domain`** — Pure Kotlin business contracts and use cases. Contains the `Joke` domain model, `JokeRepository` interface, domain-safe result/error abstractions, and use cases. It has no Android dependency, no dependency on `:data` or `:app`, and no knowledge of Retrofit, OkHttp, Room, Koin, DTOs, entities, DAOs, or UI classes.
+- **`:data`** — Infrastructure and implementation details. Contains `JokeRepositoryImpl`, the Room database (`AppDatabase`, `JokeDao`, `JokeEntity`), the Retrofit API (`JokeApi`, `JokeDto`), data mappers, network configuration, and the data-level Koin module. It owns technical exception mapping and depends on `:domain`.
+- **`:app`** — Android application and composition root. Contains Compose screens, `ViewModel`s, navigation, UI error mapping, theme, app startup, and app-level Koin wiring. It depends on `:domain` for presentation logic and on `:data` only to load concrete implementations at the composition root.
+
+The important distinction is that `:app` as an Android application module can see `:data`, but presentation code inside `:app` must not use data implementation details directly. A Konsist rule enforces that only `ChiApplication` and the app DI package may import `com.compose.chi.data.*`.
+
+Detailed modularization documentation is available in [`docs/modularization.md`](docs/modularization.md).
 
 ### Key architectural decisions
 
 - **Dependency inversion is real, not nominal.** ViewModels depend on use cases; use cases depend on the repository interface; the repository implementation lives in the data layer behind that interface.
-- **The domain layer is infrastructure-free.** Domain code does not import Retrofit, OkHttp, Room, Android, AndroidX, Koin, Java IO/network APIs, DTOs, entities, DAOs, APIs, databases, or data-layer implementations.
+- **The domain module is infrastructure-free.** Domain code does not import Retrofit, OkHttp, Room, Android, AndroidX, Koin, Java IO/network APIs, DTOs, entities, DAOs, APIs, databases, or data-layer implementations.
 - **DTOs, entities, and domain models are distinct.** `JokeDto` (network), `JokeEntity` (Room), and `Joke` (domain) are separate models with explicit mapping functions in the data layer.
 - **Domain results are domain-safe.** `Resource<T>` represents `Success` or `Error`; loading is owned by ViewModel/UI state, not by the domain result type.
 - **Technical failures stop at the data boundary.** Retrofit, HTTP, IO/network, Room, DAO, and persistence failures are caught in `JokeRepositoryImpl` and mapped to `DomainError`.
@@ -35,7 +52,7 @@ Cross-cutting concerns such as constants, analytics logging, and dependency inje
 - **Remote one-shot operations stay one-shot.** Remote repository methods are `suspend` functions returning `Resource<T>`.
 - **Observable local reads remain reactive.** Room-backed reads use `Flow<Resource<T>>` so persistence failures can be represented without leaking Room exceptions.
 - **Use cases are minimal and single-purpose.** Each use case exposes one `operator fun invoke` and delegates or orchestrates one operation without catching technical exceptions.
-- **Architecture rules are tested.** Konsist tests guard the Clean Architecture boundaries before the future module split.
+- **Architecture rules are tested.** Konsist tests guard domain purity, data placement, repository contracts, use-case shape, app/data separation, and project-wide hygiene.
 - **Koin dependency injection is used.** Koin handles dependency wiring while preserving constructor-injection patterns and Clean Architecture boundaries.
 
 ## Tech stack
@@ -49,34 +66,33 @@ Cross-cutting concerns such as constants, analytics logging, and dependency inje
 | Local storage | Room |
 | Networking | Retrofit 2, OkHttp, Gson |
 | DI | Koin |
-| Testing | JUnit 4, MockK, `kotlinx-coroutines-test`, Turbine, Konsist, in-memory Room DAO tests |
+| Testing | JUnit 4, MockK, `kotlinx-coroutines-test`, Turbine, Konsist, in-memory Room DAO tests, Gradle test fixtures |
 | CI | GitHub Actions (`./gradlew test`, `./gradlew assembleDebug`) |
-| Build | Gradle Kotlin DSL with Version Catalogue (`libs.versions.toml`) |
+| Build | Gradle Kotlin DSL with Version Catalog (`libs.versions.toml`) |
 | Annotation processing | KSP (Room compiler) |
 
 ## Project structure
 
 ```text
-app/src/main/java/com/compose/chi/
-├── analytics/        # AnalyticsLogger interface + implementation
-├── common/           # Constants
-├── data/
-│   ├── database/     # AppDatabase, JokeDao, JokeEntity
-│   ├── remote/       # JokeApi (Retrofit), JokeDto
-│   └── repository/   # JokeRepositoryImpl
-├── di/               # KoinModules.kt
-├── domain/
-│   ├── model/        # Joke
-│   ├── repository/   # JokeRepository interface
-│   ├── result/       # Resource<T>, DomainError
-│   └── use_case/     # 7 use cases
-├── presentation/
-│   ├── navigation/   # AppNavHost, Screen, bottom navigation components
-│   ├── screens/      # Home, ten jokes, detail, favourites
-│   ├── ui/theme/     # Compose theme, colors, typography, shapes
-│   └── util/         # DomainErrorUiMapper
-├── ChiApplication.kt
-└── presentation/MainActivity.kt
+.
+├── app/                         # Android application, UI, ViewModels, navigation, app DI
+│   └── src/main/java/com/compose/chi/
+│       ├── ChiApplication.kt    # Koin startup and composition root
+│       ├── analytics/           # App-specific analytics abstraction
+│       ├── di/                  # App-level Koin module: use cases + ViewModels
+│       └── presentation/        # Compose UI, navigation, theme, UI error mapping
+├── data/                        # Android library: infrastructure implementations
+│   └── src/main/java/com/compose/chi/data/
+│       ├── database/            # Room database, DAO, entity
+│       ├── di/                  # Data-level Koin module
+│       ├── remote/              # Retrofit API, DTO, network config
+│       └── repository/          # JokeRepositoryImpl
+└── domain/                      # Pure Kotlin/JVM module
+    └── src/main/java/com/compose/chi/domain/
+        ├── model/               # Joke
+        ├── repository/          # JokeRepository interface
+        ├── result/              # Resource<T>, DomainError
+        └── use_case/            # 7 use cases
 ```
 
 ## Features implemented
@@ -92,17 +108,18 @@ Bottom navigation, nested navigation graphs, multiple back stacks, and dark/ligh
 
 ## Testing strategy
 
-The project now has a regression safety net covering behavior and architecture before modularization.
+The project has a regression safety net covering behavior and architecture across all three modules.
 
 The current test suite covers:
 
-- **Use cases** — all seven use cases are tested as delegation/orchestration units over domain-safe `Resource` values.
-- **Repository implementation** — `JokeRepositoryImpl` is tested against mocked API and DAO dependencies for remote success/error mapping, local persistence mapping, cancellation propagation, and mapper usage.
+- **Use cases** — all seven use cases are tested in `:domain` as delegation/orchestration units over domain-safe `Resource` values.
+- **Repository implementation** — `JokeRepositoryImpl` is tested in `:data` against mocked API and DAO dependencies for remote success/error mapping, local persistence mapping, cancellation propagation, and mapper usage.
 - **Domain-safe error handling** — Retrofit, HTTP, IO/network, Room, DAO, persistence, unknown, and cancellation paths are covered at the data boundary.
 - **Mappers** — DTO/entity/domain mapping is tested explicitly, including `isFavourite` preservation.
-- **ViewModels** — all four screen ViewModels are tested with Turbine and a shared fake repository to verify StateFlow behavior.
-- **Room DAO** — instrumented tests use an in-memory Room database for insert, query, favourite filtering, liked-state lookup, and delete-all behavior.
-- **Architecture rules** — Konsist tests enforce domain purity, data/repository placement, use-case shape, remote API conventions, project-wide wildcard import rules, and clean-boundary restrictions.
+- **ViewModels** — all four screen ViewModels are tested in `:app` with Turbine and a shared domain test fixture repository to verify StateFlow behavior.
+- **Room DAO** — instrumented tests live in `:data` and use an in-memory Room database for insert, query, favourite filtering, liked-state lookup, and delete-all behavior.
+- **Architecture rules** — Konsist tests enforce domain purity, data/repository placement, use-case shape, app/data separation, remote API conventions, project-wide wildcard import rules, and clean-boundary restrictions.
+- **Shared test fixtures** — domain fixtures provide canonical `Joke` samples and `FakeJokeRepository`; data fixtures provide DTO/entity factories without duplicating domain test helpers.
 
 Current totals:
 
@@ -129,7 +146,7 @@ Detailed testing documentation is available in `docs/tests/Testing.md`, includin
 | 7  | Use cases with dependency inversion                              |   ✅   |
 | 8  | Kotlin Coroutines + Flow + StateFlow                             |   ✅   |
 | 9  | Koin Dependency Injection                                        |   ✅   |
-| 10 | Dependency management with Gradle Kotlin DSL + Version Catalogue |   ✅   |
+| 10 | Dependency management with Gradle Kotlin DSL + Version Catalog   |   ✅   |
 | 11 | Kotlin 2.x + Compose modernization                               |   ✅   |
 | 12 | Expanded unit tests across use cases, repository, mappers, VMs   |   ✅   |
 | 13 | Turbine-based ViewModel StateFlow tests                          |   ✅   |
@@ -138,17 +155,18 @@ Detailed testing documentation is available in `docs/tests/Testing.md`, includin
 | 16 | Data-owned technical exception mapping                           |   ✅   |
 | 17 | Konsist architecture boundary tests                              |   ✅   |
 | 18 | GitHub Actions CI verification                                   |   ✅   |
-| 19 | Three-module modularization (`:domain`, `:data`, `:app`)         |   ⏳   |
-| 20 | Static analysis with ktlint / Spotless / Detekt                  |   ⏳   |
-| 21 | Offline-first repository pattern                                 |   ⏳   |
-| 22 | MockWebServer API integration tests                              |   ⏳   |
-| 23 | Network connectivity monitoring                                  |   ⏳   |
-| 24 | DataStore                                                        |   ⏳   |
-| 25 | Kotlin Multiplatform exploration                                 |   ⏳   |
+| 19 | Three-module modularization (`:domain`, `:data`, `:app`)         |   ✅   |
+| 20 | Gradle test fixtures for shared test helpers                     |   ✅   |
+| 21 | Static analysis with ktlint / Spotless / Detekt                  |   ⏳   |
+| 22 | Offline-first repository pattern                                 |   ⏳   |
+| 23 | MockWebServer API integration tests                              |   ⏳   |
+| 24 | Network connectivity monitoring                                  |   ⏳   |
+| 25 | DataStore                                                        |   ⏳   |
+| 26 | Kotlin Multiplatform exploration                                 |   ⏳   |
 
 ## Roadmap
 
-The repository is modernized incrementally so each step leaves the app buildable, reviewable, and easier to evolve. The current order is intentional: test coverage and architecture guardrails come before modularization.
+The repository is modernized incrementally so each step leaves the app buildable, reviewable, and easier to evolve. The current order is intentional: architecture cleanup, testing, CI, and modularization come before broader static analysis and behavior-changing data-flow work.
 
 Completed:
 
@@ -195,7 +213,7 @@ Completed:
   - Use cases simplified to delegation/orchestration over domain-safe results.
 
 - **Konsist architecture guardrails**
-  - Domain, data, repository, use-case, API, and project-wide architecture tests added.
+  - Domain, data, repository, use-case, API, app-layer, and project-wide architecture tests added.
   - Wildcard import checks added.
   - Clean Architecture boundary regressions are now covered by unit tests.
 
@@ -205,12 +223,13 @@ Completed:
   - CI runs `./gradlew test` and `./gradlew assembleDebug`.
   - The production-source TODO architecture rule was corrected to scan production sources reliably across platforms.
 
-Planned:
-
 - **Three-module modularization**
-  - Split the current single app module into `:domain`, `:data`, and `:app`.
-  - Preserve the same Clean Architecture boundaries while making them enforceable at the Gradle module level.
-  - Prepare the structure for future KMP source-set separation.
+  - The previous single Android module was split into `:domain`, `:data`, and `:app`.
+  - Package-level Clean Architecture boundaries are now backed by Gradle module boundaries and Konsist app-layer rules.
+  - Tests and architecture suites were moved to the modules that own the code they verify.
+  - Shared domain/data test helpers were consolidated through Gradle test fixtures.
+
+Planned:
 
 - **Static analysis and formatting enforcement**
   - Add ktlint, Spotless, and Detekt.

@@ -2,6 +2,64 @@
 
 All notable changes to CAAA are documented here.
 
+## May 2026 - Three-module modularization
+
+### Added
+
+- Three Gradle modules replacing the previous single-module setup:
+  - `:domain` for pure Kotlin domain models, repository contracts, result/error abstractions, and use cases.
+  - `:data` for Room, Retrofit, DTOs/entities, mappers, repository implementation, technical exception mapping, and data-level DI.
+  - `:app` for Compose UI, navigation, ViewModels, app startup, app-level DI, resources, and presentation mapping.
+- Gradle test fixtures for shared test helpers:
+  - `:domain` owns canonical `Joke` samples and `FakeJokeRepository`.
+  - `:data` owns DTO/entity factories and reuses `:domain` fixtures.
+- `AppLayerArchitectureTest` to enforce the composition-root rule: only `ChiApplication` and the app DI package may import `com.compose.chi.data.*`; presentation code must stay on domain abstractions.
+- App-layer Retrofit guardrail preventing `:app` production code from referencing `retrofit2` types.
+- `docs/modularization.md` documenting the module layout, ownership rules, DI split, test fixture strategy, architecture-test placement, verification commands, and common pitfalls.
+
+### Changed
+
+- Production sources moved to their owning modules without changing package names:
+  - `:domain` owns `Joke`, `JokeRepository`, `Resource`, `DomainError`, and the seven use cases.
+  - `:data` owns `AppDatabase`, `JokeDao`, `JokeEntity`, `JokeApi`, `JokeDto`, `JokeRepositoryImpl`, `NetworkConfig`, and `dataKoinModule`.
+  - `:app` owns `ChiApplication`, Compose screens, navigation, ViewModels, `DomainErrorUiMapper`, theme, analytics, and `appKoinModule`.
+- Dependency injection split by ownership: `dataKoinModule` lives in `:data`, `appKoinModule` stays in `:app`, and `ChiApplication` loads both at startup.
+- Tests now follow module ownership:
+  - use-case tests in `:domain`,
+  - mapper and repository implementation tests in `:data`,
+  - DAO instrumented tests in `:data:androidTest`,
+  - ViewModel and app-layer architecture tests in `:app`.
+- Konsist architecture tests are colocated with the modules they verify, while project-wide/app-boundary rules stay in `:app`.
+- Root Gradle configuration now uses plugins-DSL aliases driven by `gradle/libs.versions.toml` instead of the legacy `buildscript { classpath(...) }` pattern.
+- `:domain` applies `kotlin-jvm` through the version-catalog plugin alias and uses `kotlin.jvmToolchain(17)` for JVM targeting.
+- `.gitignore` now excludes module-level `build/` directories.
+- App namespace and `applicationId` are aligned to `com.compose.chi`.
+
+### Removed
+
+- Previous single-module source layout.
+- Legacy Kotlin/KSP Gradle plugin library aliases from the version catalog; plugin resolution now goes through the plugins DSL.
+
+### Notes
+
+- The `:app` module intentionally depends on both `:domain` and `:data` because it is the Android application and Koin composition root. Presentation code inside `:app` is still guarded from importing data implementation details by Konsist.
+- `:domain` is now a pure Kotlin/JVM module and is structurally ready for a future KMP-oriented migration. No KMP migration was performed in this update.
+- The application ID change means an existing debug install under `com.example.chi` will not be upgraded in place. Uninstall the old debug APK before installing the new one if needed.
+
+### Verification
+
+- `./gradlew.bat clean`
+- `./gradlew.bat test`
+- `./gradlew.bat assembleDebug`
+
+DAO instrumented tests remain device/emulator-based and should be run with `./gradlew.bat :data:connectedDebugAndroidTest` when an emulator or device is available.
+
+### Totals after this update
+
+- 81 JVM unit tests.
+- 5 Room DAO instrumented tests.
+- 86 tests total.
+
 ## May 2026 - CI verification checkpoint
 
 ### Added

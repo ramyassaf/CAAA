@@ -1,48 +1,62 @@
 # Testing
 
-Notes on how the test suite is laid out, what each layer is protecting, and what
-to reach for when adding more.
+Notes on how the test suite is laid out, what each layer protects, and what to reach for when adding more.
 
-JVM unit tests run under `testDebugUnitTest`. The Room DAO test runs on an
-emulator or device under `connectedDebugAndroidTest`.
+CAAA currently has:
+
+- **81 JVM unit tests** across `:domain`, `:data`, and `:app`.
+- **5 Room DAO instrumented tests** in `:data`.
+- **86 tests total**.
+
+JVM tests run with `./gradlew test`. The Room DAO tests require an emulator or device and run from `:data` with `./gradlew :data:connectedDebugAndroidTest`.
 
 ## Layers covered
 
-- **Mappers** — DTO → domain, entity ↔ domain.
-- **Use cases** — pass-through on success, error semantics on failure.
-- **Repository** — translates API and DAO outcomes into
-  `Resource<DomainError>`. No framework exception leaks past this boundary,
-  except `CancellationException`, which is rethrown.
+- **Domain use cases** — thin delegation/orchestration over domain-safe `Resource` values.
+- **Repository implementation** — translates API and DAO outcomes into `Resource<DomainError>` values. No framework exception leaks past this boundary except `CancellationException`, which is rethrown.
+- **Mappers** — DTO → domain and entity ↔ domain mapping.
 - **ViewModels** — StateFlow emissions in response to use-case results.
-- **Architecture** — Konsist rules over package boundaries and naming.
-- **Room DAO** — one instrumented test against an in-memory database.
+- **Architecture** — Konsist rules over module boundaries, package ownership, naming, and app/data separation.
+- **Room DAO** — instrumented tests against an in-memory database.
 
 ## Tooling
 
 - JUnit 4
 - MockK
-- Turbine for any Flow or StateFlow assertion
-- `kotlinx-coroutines-test` for `runTest` and virtual time
-- Konsist for the architecture checks
+- Turbine for Flow and StateFlow assertions
+- `kotlinx-coroutines-test` for JVM coroutine tests
+- Konsist for architecture checks
+- Gradle test fixtures for shared test helpers
 
 ## Layout
 
-```
-app/src/test/java/com/compose/chi
-├── architecture/                  Konsist rules over the codebase
-├── data/
-│   ├── database/model/            entity ↔ domain mapper
-│   ├── remote/dto/                DTO → domain mapper
-│   └── repository/                JokeRepositoryImpl behaviour
-├── domain/use_case/               one file per use case
-├── presentation/screens/<feature>/  per-screen ViewModel tests
-└── testing/                       shared rule + fixtures + fake
-    ├── MainDispatcherRule.kt
-    ├── TestJokes.kt
-    └── FakeJokeRepository.kt
+```text
+domain/src/test/java/com/compose/chi/
+├── architecture/                  Domain and use-case architecture rules
+└── domain/use_case/               One file per use case
 
-app/src/androidTest/java/com/compose/chi/data/database/
-└── JokeDaoTest.kt
+domain/src/testFixtures/java/com/compose/chi/testing/
+├── TestJokes.kt                   Canonical domain Joke samples
+└── FakeJokeRepository.kt          Pure-domain fake repository
+
+data/src/test/java/com/compose/chi/
+├── architecture/                  Data-layer architecture rules
+└── data/
+    ├── database/model/            Entity ↔ domain mapper tests
+    ├── remote/dto/                DTO → domain mapper tests
+    └── repository/                JokeRepositoryImpl behavior tests
+
+data/src/testFixtures/java/com/compose/chi/testing/
+├── JokeDtos.kt                    DTO factories
+└── JokeEntities.kt                Entity factories
+
+data/src/androidTest/java/com/compose/chi/data/database/
+└── JokeDaoTest.kt                 In-memory Room DAO tests
+
+app/src/test/java/com/compose/chi/
+├── architecture/                  App-layer and project-wide architecture rules
+├── presentation/screens/<feature>/  Per-screen ViewModel tests
+└── testing/                       MainDispatcherRule
 ```
 
 ## The result type
@@ -64,187 +78,129 @@ sealed interface DomainError {
 }
 ```
 
-`JokeRepositoryImpl` is the single place that catches framework exceptions and
-maps them:
+`JokeRepositoryImpl` is the single place that catches framework exceptions and maps them:
 
-| Source                                | Maps to                  |
-|---------------------------------------|--------------------------|
-| `IOException`                         | `DomainError.Network`    |
-| `HttpException` 404                   | `DomainError.NotFound`   |
-| `HttpException` 5xx                   | `DomainError.Server`     |
-| `HttpException` other                 | `DomainError.Unknown`    |
-| Any other `RuntimeException`          | `DomainError.Unknown`    |
-| Any DAO failure (suspend or Flow)     | `DomainError.Persistence`|
-| `CancellationException`               | rethrown unchanged       |
+| Source | Maps to |
+|---|---|
+| `IOException` | `DomainError.Network` |
+| `HttpException` 404 | `DomainError.NotFound` |
+| `HttpException` 5xx | `DomainError.Server` |
+| `HttpException` other | `DomainError.Unknown` |
+| Any other `RuntimeException` | `DomainError.Unknown` |
+| Any DAO failure, suspend or Flow | `DomainError.Persistence` |
+| `CancellationException` | Rethrown unchanged |
 
-Because the repository owns this mapping, use cases on top are thin
-pass-throughs and their tests are short by design.
+Because the repository owns this mapping, use cases remain thin and their tests stay short by design.
 
 ## Shared helpers
 
-Everything under `testing/` is reused across the suite.
+`MainDispatcherRule` lives in `:app` test sources because it is used by ViewModel tests.
 
-`MainDispatcherRule` is a `TestWatcher` that swaps `Dispatchers.Main` for a
-`StandardTestDispatcher` per test. ViewModel tests pass
-`mainDispatcherRule.testDispatcher` into `runTest(...)` so the test scope and
-`viewModelScope` share a scheduler — `advanceUntilIdle()` then controls both.
+Domain-level fixtures live in `:domain` test fixtures:
 
-`TestJokes` is the only place fixture data is defined: canonical `Joke`,
-`JokeDto`, and `JokeEntity` instances (favourite and non-favourite variants,
-plus a `tenJokes()` builder). Use it; do not inline data.
+- `TestJokes` defines canonical `Joke` samples and builders.
+- `FakeJokeRepository` is the hand-written `JokeRepository` used by ViewModel and use-case tests. Its methods have configurable `Resource` return values; liked jokes and per-id liked status are backed by `MutableStateFlow` so tests can drive emissions.
 
-`FakeJokeRepository` is the hand-written `JokeRepository` used by ViewModel and
-use-case tests. Each method has a configurable `Resource` return value; liked
-jokes and per-id liked status are backed by `MutableStateFlow` so tests can
-drive emissions. There are also a few recorders — `upsertedJokes`,
-`deleteAllCallCount`, `lastRequestedJokeId` — for assertions about *what was
-called*, not just *what came back*.
+Data-specific fixtures live in `:data` test fixtures:
 
-Default to the fake. Reach for MockK when a test specifically needs to verify
-the arguments a dependency was called with.
+- `JokeDtos` defines DTO samples.
+- `JokeEntities` defines Room entity samples.
+
+This keeps fixture ownership aligned with the production model ownership and avoids duplicating the same helper across modules.
+
+Default to the fake repository for ViewModel tests. Reach for MockK when a test specifically needs to verify dependency calls or simulate framework/API/DAO behavior.
 
 ## What each layer protects
 
-### Mappers
-
-Two files, deliberately boring.
-
-- `JokeDtoMapperTest` — every field carried, `isFavourite` defaults to `false`.
-- `JokeEntityMapperTest` — both directions, every field including
-  `isFavourite`.
-
-The entity test is here because an earlier version of `JokeEntity.toJoke()`
-silently dropped `isFavourite`, so liked jokes loaded from Room arrived in the
-UI with the flag cleared. This test exists to keep that regression dead.
-
 ### Use cases
 
-Pass-through behaviour. The observing use cases have two tests apiece (success,
-error). The remote suspend use cases have one each — `assertSame` on the
-repository result plus a `coVerify` that the repository was called. The
-interesting branches live in the repository.
+Use cases are tested in `:domain`. They verify pass-through/delegation behavior over the `JokeRepository` contract and domain-safe `Resource` values. The interesting technical branches live below them in `:data`.
 
 ### Repository
 
-The largest test file. Every branch of the error mapping is pinned:
+`JokeRepositoryImplTest` is the largest test file. It pins the data boundary behavior:
 
-- `Resource.Success` carries the mapped domain object on the happy path.
-- `IOException` → `Network`.
-- `HttpException` 404 → `NotFound`, 5xx → `Server`, anything else → `Unknown`.
-- Random `RuntimeException` → `Unknown`.
-- DAO failures, suspend or Flow, → `Persistence`.
-- `CancellationException` is rethrown from every path.
+- `Resource.Success` carries mapped domain objects on the happy path.
+- `IOException` maps to `Network`.
+- `HttpException` 404 maps to `NotFound`.
+- `HttpException` 5xx maps to `Server`.
+- Other HTTP/runtime failures map to `Unknown`.
+- DAO failures, suspend or Flow, map to `Persistence`.
+- `CancellationException` is rethrown from every relevant path.
 
-Plus the structural checks: `observeLikedJokes` preserves `isFavourite = true`
-on every emitted joke (repository-layer guard for the mapper above); `upsertJoke`
-builds a `JokeEntity` with every field, including `isFavourite`, and delegates
-to the DAO exactly once.
+It also verifies mapper usage and preservation of `isFavourite` through Room-backed flows.
+
+### Mappers
+
+Mapper tests are deliberately simple and explicit:
+
+- `JokeDtoMapperTest` — every field carried, `isFavourite` defaults to `false`.
+- `JokeEntityMapperTest` — both directions, every field including `isFavourite`.
+
+The entity test protects against a previous regression where `JokeEntity.toJoke()` silently dropped `isFavourite`.
 
 ### ViewModels
 
-Tests drive real use cases through `FakeJokeRepository`. Turbine handles every
-StateFlow assertion. A few things to know before adding more:
+ViewModel tests live in `:app` and drive real use cases backed by `FakeJokeRepository`. Turbine handles StateFlow assertions.
+
+Useful rules when adding more:
 
 - Pass `mainDispatcherRule.testDispatcher` into `runTest(...)`.
-- The ViewModels start work in `init`. Collect `state` before advancing the
-  dispatcher when asserting the initial emission, otherwise the first item
-  will already be the loading state.
-- `MyFavouriteJokesViewModel.state` is built with
-  `stateIn(... WhileSubscribed(5000), ...)`. Reading `state.value` without an
-  active subscription returns the stale initial default. Wrap reads in
-  `state.test { ... }` or skip past the first emission explicitly.
-
-One quirk worth knowing: `MyFavouriteJokesViewModel.isLoading` is permanently
-`false` in the current production code (the initial value defaults to `false`
-and the `combine` block also produces `false`). The test asserts that
-behaviour; the day it changes, the VM and the test need to move together.
+- The ViewModels start work in `init`; collect `state` before advancing the dispatcher when asserting the first emission.
+- `MyFavouriteJokesViewModel.state` uses `stateIn(... WhileSubscribed(5000), ...)`; assert it through an active Turbine subscription instead of relying on a stale `state.value` read.
 
 ### Architecture (Konsist)
 
-A small set of rules that catch trivial drift before review reaches it:
+Konsist tests are split by ownership:
 
-- No wildcard imports anywhere; no empty Kotlin files.
-- No `TODO` strings in production sources.
-- `*Repository` interfaces live under `domain/repository/`, `*RepositoryImpl`
-  classes under `data/repository/`, and the impl actually implements a domain
-  interface.
-- Equivalent boundary rules for use cases, the remote API, and the
-  domain ↔ data split.
+- `:domain` owns domain purity and use-case shape rules.
+- `:data` owns data-layer placement, DTO/entity/API/repository implementation rules.
+- `:app` owns app-layer and project-wide rules, including the composition-root rule that only `ChiApplication` and the app DI package may import `com.compose.chi.data.*`.
 
-Cheap to run, stable, and they make the package layout self-enforcing.
+These tests complement Gradle module boundaries. Gradle prevents impossible module arrows, while Konsist documents and verifies the finer app-internal rules.
 
 ### Room DAO (instrumented)
 
-`JokeDaoTest` uses `Room.inMemoryDatabaseBuilder(...)`, closes the database in
-`@After`, and reads flows with `Flow.first()`. Five cases:
+`JokeDaoTest` lives in `:data/src/androidTest` and uses `Room.inMemoryDatabaseBuilder(...)`. Five cases are covered:
 
 - Insert and read round-trip.
 - `observeAllLikedJokes()` filters down to favourites.
-- `observeFavoriteJoke(id)` returns true / false / false for liked,
-  not-liked, and missing ids.
+- `observeFavoriteJoke(id)` returns true / false / false for liked, not-liked, and missing ids.
 - `deleteAllJokes()` clears the table.
 
-This file uses `runBlocking` rather than `runTest`. Worth the paragraph because
-it looks inconsistent at first glance:
-
-> `runTest 1.11.0` crashes on device with
-> `NoSuchMethodError: runBlockingK$default`. The
-> `debugAndroidTestRuntimeClasspath` resolves `kotlinx-coroutines-core` to
-> 1.9.0 because `androidx.test.ext:junit` 1.3.0 and
-> `androidx.test.espresso:espresso-core` 3.7.0 publish a
-> `kotlinx-coroutines-bom:{strictly 1.9.0}` constraint via Gradle Module
-> Metadata. Modern Gradle does not let `force()`,
-> `eachDependency.useVersion()`, or another `strictly()` override an upstream
-> `strictly` — strict-vs-strict either intersects (lowest wins) or fails the
-> resolution.
-
-DAO tests don't need virtual time, dispatcher control, or Flow scheduling, so
-`runBlocking` is fine here. The JVM classpath doesn't pull the Android test
-artifacts, so everything else stays on `runTest`.
+This file uses `runBlocking` rather than `runTest` because the Android test classpath currently resolves `kotlinx-coroutines-core` to an older version through AndroidX test dependencies, which makes `runTest` crash at runtime. DAO tests do not need virtual time, dispatcher control, or Flow scheduling, so `runBlocking` is sufficient here.
 
 ## Running
 
-JVM unit tests (mappers, use cases, repository, ViewModels, architecture):
+Run all JVM tests and architecture checks:
 
-```
-./gradlew testDebugUnitTest
-```
-
-Instrumented DAO test, requires an emulator or attached device:
-
-```
-./gradlew connectedDebugAndroidTest
-```
-
-If no device is attached, `assembleDebugAndroidTest` will at least verify the
-test APK builds, and `assembleDebug` confirms the app itself still builds.
-
-### CI verification
-
-GitHub Actions runs the core verification workflow on pull requests and pushes targeting `dev` and `main`, and can also be triggered manually.
-
-CI currently runs:
-
-```
+```bash
 ./gradlew test
+```
+
+Run a specific module's JVM tests:
+
+```bash
+./gradlew :domain:test
+./gradlew :data:test
+./gradlew :app:test
+```
+
+Run the DAO instrumented tests, with an emulator or attached device:
+
+```bash
+./gradlew :data:connectedDebugAndroidTest
+```
+
+Build the app:
+
+```bash
 ./gradlew assembleDebug
 ```
 
-This verifies the JVM test suite, Konsist architecture tests, and debug build assembly.
+CI currently runs:
 
-Instrumented Room DAO tests remain manual/emulator-based verification through:
-
+```bash
+./gradlew test
+./gradlew assembleDebug
 ```
-./gradlew connectedDebugAndroidTest
-```
-
-## When adding a test
-
-- Use `TestJokes` for fixture data. If the fixtures you need aren't there,
-  add them to `TestJokes` rather than inlining.
-- Drive ViewModel and use-case tests through `FakeJokeRepository`. Reach for
-  MockK when you need to assert on *call sites and arguments*.
-- New `DomainError` cases must flow through `Resource.Error(DomainError.*)`;
-  no exception types should leak past the repository.
-- New repositories and use cases need entries in the Konsist rules if the
-  default name-pattern checks don't cover them yet.
