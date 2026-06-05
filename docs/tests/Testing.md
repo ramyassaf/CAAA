@@ -16,7 +16,7 @@ JVM tests run with `./gradlew test`. The Room DAO tests require an emulator or d
 - **Repository implementation** — translates API and DAO outcomes into `Resource<DomainError>` values. No framework exception leaks past this boundary except `CancellationException`, which is rethrown.
 - **Mappers** — DTO → domain and entity ↔ domain mapping.
 - **ViewModels** — StateFlow emissions in response to use-case results.
-- **Architecture** — Konsist rules over module boundaries, package ownership, naming, and app/data separation.
+- **Architecture** — Gradle module graph verification plus Konsist rules over package ownership, naming, and composition root boundaries.
 - **Room DAO** — instrumented tests against an in-memory database.
 
 ## Tooling
@@ -25,7 +25,8 @@ JVM tests run with `./gradlew test`. The Room DAO tests require an emulator or d
 - MockK
 - Turbine for Flow and StateFlow assertions
 - `kotlinx-coroutines-test` for JVM coroutine tests
-- Konsist for architecture checks
+- Gradle architecture verification for module dependency direction
+- Konsist for source-level architecture checks
 - Gradle test fixtures for shared test helpers
 
 ## Layout
@@ -149,15 +150,17 @@ Useful rules when adding more:
 - The ViewModels start work in `init`; collect `state` before advancing the dispatcher when asserting the first emission.
 - `MyFavouriteJokesViewModel.state` uses `stateIn(... WhileSubscribed(5000), ...)`; assert it through an active Turbine subscription instead of relying on a stale `state.value` read.
 
-### Architecture (Konsist)
+### Architecture (Gradle + Konsist)
+
+Module dependency direction is verified by a Gradle architecture check, while Konsist remains focused on code-shape rules that the Gradle module graph does not express.
 
 Konsist tests are split by ownership:
 
 - `:domain` owns domain purity and use-case shape rules.
 - `:data` owns data-layer placement, DTO/entity/API/repository implementation rules.
-- `:app` owns app-layer and project-wide rules, including the composition-root rule that only `ChiApplication` and the app DI package may import `com.compose.chi.data.*`.
+- `:app` owns app-layer and project-wide rules, including the composition-root rules that no `:app` file outside `ChiApplication` imports from `:data`, and that `ChiApplication` itself imports only the data Koin module.
 
-These tests complement Gradle module boundaries. Gradle prevents impossible module arrows, while Konsist documents and verifies the finer app-internal rules.
+The root `verifyModuleArchitecture` task enforces the allowed production project dependency graph. Encoding the graph as a build check verifies it automatically on every local and CI run, so accidental cross-module coupling fails fast instead of reaching review.
 
 ### Room DAO (instrumented)
 
@@ -172,10 +175,10 @@ This file uses `runBlocking` rather than `runTest` because the Android test clas
 
 ## Running
 
-Run all JVM tests and architecture checks:
+Run the module graph check and all JVM tests:
 
 ```bash
-./gradlew test
+./gradlew verifyModuleArchitecture test
 ```
 
 Run a specific module's JVM tests:
@@ -201,6 +204,6 @@ Build the app:
 CI currently runs:
 
 ```bash
-./gradlew test
+./gradlew verifyModuleArchitecture test
 ./gradlew assembleDebug
 ```

@@ -30,7 +30,10 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
 
-      - name: Run unit and architecture tests
+      - name: Verify module architecture
+        run: ./gradlew verifyModuleArchitecture --stacktrace
+
+      - name: Run unit tests
         run: ./gradlew test --stacktrace
 
       - name: Assemble debug build

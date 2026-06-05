@@ -1,6 +1,6 @@
 # CAAA — Clean Architecture Jetpack Compose Android Skeleton
 
-> **Status:** Actively maintained and continuously modernized. The project now uses a three-module Clean Architecture setup (`:domain`, `:data`, `:app`) with Android toolchain/runtime modernization, Koin dependency injection, expanded test coverage, Konsist architecture guardrails, and GitHub Actions CI verification. The next major milestone is Phase 6: static analysis and formatting enforcement with ktlint, Spotless, and Detekt.
+> **Status:** Actively maintained and continuously modernized. The project now uses a module-level Clean Architecture setup (`:domain`, `:data`, `:presentation`, `:app`) with Android toolchain/runtime modernization, Koin dependency injection, expanded test coverage, Gradle module graph enforcement, Konsist architecture guardrails, and GitHub Actions CI verification. The next major milestone is Phase 6: static analysis and formatting enforcement with ktlint, Spotless, and Detekt.
 
 ## What this project is
 
@@ -35,9 +35,10 @@ presentation ─────► domain ◄───── data
 
 - **`:domain`** — Pure Kotlin business contracts and use cases. Contains the `Joke` domain model, `JokeRepository` interface, domain-safe result/error abstractions, and use cases. It has no Android dependency, no dependency on `:data` or `:app`, and no knowledge of Retrofit, OkHttp, Room, Koin, DTOs, entities, DAOs, or UI classes.
 - **`:data`** — Infrastructure and implementation details. Contains `JokeRepositoryImpl`, the Room database (`AppDatabase`, `JokeDao`, `JokeEntity`), the Retrofit API (`JokeApi`, `JokeDto`), data mappers, network configuration, and the data-level Koin module. It owns technical exception mapping and depends on `:domain`.
-- **`:app`** — Android application and composition root. Contains Compose screens, `ViewModel`s, navigation, UI error mapping, theme, app startup, and app-level Koin wiring. It depends on `:domain` for presentation logic and on `:data` only to load concrete implementations at the composition root.
+- **`:presentation`** — UI and presentation logic. Contains the Compose screens, `ViewModel`s, navigation, theme, UI error mapping, and the presentation-level Koin module (`presentationKoinModule`, which wires use cases and ViewModels). It depends only on `:domain`.
+- **`:app`** — Android application and composition root. Contains `ChiApplication` (starts Koin and installs the data and presentation modules), `MainActivity`, and app-specific concerns such as analytics. It depends on `:presentation` and on `:data` only to wire concrete implementations at the composition root.
 
-The important distinction is that `:app` as an Android application module can see `:data`, but presentation code inside `:app` must not use data implementation details directly. A Konsist rule enforces that only `ChiApplication` and the app DI package may import `com.compose.chi.data.*`.
+The important distinction is that `:app` as an Android application module can see `:data`, but presentation code must not use data implementation details directly. A Konsist rule enforces that only `ChiApplication` may import the data Koin module.
 
 Detailed modularization documentation is available in [`docs/modularization.md`](docs/modularization.md).
 
@@ -52,7 +53,7 @@ Detailed modularization documentation is available in [`docs/modularization.md`]
 - **Remote one-shot operations stay one-shot.** Remote repository methods are `suspend` functions returning `Resource<T>`.
 - **Observable local reads remain reactive.** Room-backed reads use `Flow<Resource<T>>` so persistence failures can be represented without leaking Room exceptions.
 - **Use cases are minimal and single-purpose.** Each use case exposes one `operator fun invoke` and delegates or orchestrates one operation without catching technical exceptions.
-- **Architecture rules are tested.** Konsist tests guard domain purity, data placement, repository contracts, use-case shape, app/data separation, and project-wide hygiene.
+- **Architecture rules are tested.** A Gradle architecture check verifies module dependency direction, while Konsist tests guard domain purity, data placement, repository contracts, use-case shape, composition root boundaries, and project-wide hygiene.
 - **Koin dependency injection is used.** Koin handles dependency wiring while preserving constructor-injection patterns and Clean Architecture boundaries.
 
 ## Tech stack
@@ -67,7 +68,7 @@ Detailed modularization documentation is available in [`docs/modularization.md`]
 | Networking | Retrofit 2, OkHttp, Gson |
 | DI | Koin |
 | Testing | JUnit 4, MockK, `kotlinx-coroutines-test`, Turbine, Konsist, in-memory Room DAO tests, Gradle test fixtures |
-| CI | GitHub Actions (`./gradlew test`, `./gradlew assembleDebug`) |
+| CI | GitHub Actions (`./gradlew verifyModuleArchitecture test`, `./gradlew assembleDebug`) |
 | Build | Gradle Kotlin DSL with Version Catalog (`libs.versions.toml`) |
 | Annotation processing | KSP (Room compiler) |
 
@@ -75,12 +76,18 @@ Detailed modularization documentation is available in [`docs/modularization.md`]
 
 ```text
 .
-├── app/                         # Android application, UI, ViewModels, navigation, app DI
+├── app/                         # Android application: composition root + entry point
 │   └── src/main/java/com/compose/chi/
 │       ├── ChiApplication.kt    # Koin startup and composition root
 │       ├── analytics/           # App-specific analytics abstraction
-│       ├── di/                  # App-level Koin module: use cases + ViewModels
-│       └── presentation/        # Compose UI, navigation, theme, UI error mapping
+│       └── presentation/        # MainActivity (hosts the Compose UI)
+├── presentation/                # Android library: Compose UI, ViewModels, navigation, theme
+│   └── src/main/java/com/compose/chi/presentation/
+│       ├── di/                  # presentationKoinModule (use cases + ViewModels)
+│       ├── navigation/          # NavHost, Screen, bottom navigation
+│       ├── screens/             # Composables, UI state, ViewModels
+│       ├── ui/theme/            # Colors, typography, shapes, dimensions
+│       └── util/                # DomainErrorUiMapper
 ├── data/                        # Android library: infrastructure implementations
 │   └── src/main/java/com/compose/chi/data/
 │       ├── database/            # Room database, DAO, entity
@@ -108,7 +115,7 @@ Bottom navigation, nested navigation graphs, multiple back stacks, and dark/ligh
 
 ## Testing strategy
 
-The project has a regression safety net covering behavior and architecture across all three modules.
+The project has a regression safety net covering behavior and architecture across all four modules.
 
 The current test suite covers:
 
@@ -118,7 +125,7 @@ The current test suite covers:
 - **Mappers** — DTO/entity/domain mapping is tested explicitly, including `isFavourite` preservation.
 - **ViewModels** — all four screen ViewModels are tested in `:app` with Turbine and a shared domain test fixture repository to verify StateFlow behavior.
 - **Room DAO** — instrumented tests live in `:data` and use an in-memory Room database for insert, query, favourite filtering, liked-state lookup, and delete-all behavior.
-- **Architecture rules** — Konsist tests enforce domain purity, data/repository placement, use-case shape, app/data separation, remote API conventions, project-wide wildcard import rules, and clean-boundary restrictions.
+- **Architecture rules** — a Gradle architecture check enforces the module dependency graph; Konsist tests enforce domain purity, data/repository placement, use-case shape, composition root boundaries, remote API conventions, project-wide wildcard import rules, and clean-boundary restrictions.
 - **Shared test fixtures** — domain fixtures provide canonical `Joke` samples and `FakeJokeRepository`; data fixtures provide DTO/entity factories without duplicating domain test helpers.
 
 Current totals:
@@ -129,7 +136,7 @@ Current totals:
 
 Generated template tests were removed and replaced with meaningful coverage.
 
-GitHub Actions verifies the core safety net on pull requests and pushes targeting `dev` and `main`, with manual dispatch available when needed. The CI workflow runs `./gradlew test` and `./gradlew assembleDebug`, covering JVM tests, Konsist architecture checks, and debug build assembly.
+GitHub Actions verifies the core safety net on pull requests and pushes targeting `dev` and `main`, with manual dispatch available when needed. The CI workflow runs `./gradlew verifyModuleArchitecture test` and `./gradlew assembleDebug`, covering module-level Clean Architecture verification, JVM tests, Konsist architecture checks, and debug build assembly.
 
 Detailed testing documentation is available in `docs/tests/Testing.md`, including the test layout, shared helpers, architecture checks, CI verification, and guidance for adding new tests.
 
@@ -155,7 +162,7 @@ Detailed testing documentation is available in `docs/tests/Testing.md`, includin
 | 16 | Data-owned technical exception mapping                           |   ✅   |
 | 17 | Konsist architecture boundary tests                              |   ✅   |
 | 18 | GitHub Actions CI verification                                   |   ✅   |
-| 19 | Three-module modularization (`:domain`, `:data`, `:app`)         |   ✅   |
+| 19 | Multi-module split (`:domain`, `:data`, `:presentation`, `:app`)         |   ✅   |
 | 20 | Gradle test fixtures for shared test helpers                     |   ✅   |
 | 21 | Static analysis with ktlint / Spotless / Detekt                  |   ⏳   |
 | 22 | Offline-first repository pattern                                 |   ⏳   |
@@ -220,12 +227,12 @@ Completed:
 - **CI verification checkpoint**
   - GitHub Actions verifies pull requests and pushes targeting `dev` and `main`.
   - Manual workflow dispatch is available for on-demand verification.
-  - CI runs `./gradlew test` and `./gradlew assembleDebug`.
+  - CI runs `./gradlew verifyModuleArchitecture test` and `./gradlew assembleDebug`.
   - The production-source TODO architecture rule was corrected to scan production sources reliably across platforms.
 
-- **Three-module modularization**
-  - The previous single Android module was split into `:domain`, `:data`, and `:app`.
-  - Package-level Clean Architecture boundaries are now backed by Gradle module boundaries and Konsist app-layer rules.
+- **Multi-module split**
+  - The previous single Android module was split into `:domain`, `:data`, `:presentation`, and `:app`.
+  - Package-level Clean Architecture boundaries are now backed by Gradle module graph enforcement and Konsist app-layer rules.
   - Tests and architecture suites were moved to the modules that own the code they verify.
   - Shared domain/data test helpers were consolidated through Gradle test fixtures.
 
