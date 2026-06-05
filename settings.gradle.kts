@@ -14,5 +14,6 @@ dependencyResolutionManagement {
 }
 rootProject.name = "CHI"
 include(":app")
+include(":presentation")
 include(":domain")
 include(":data")

@@ -1,4 +1,4 @@
-package com.compose.chi.di
+package com.compose.chi.presentation.di
 
 import com.compose.chi.domain.use_case.DeleteAllJokesUseCase
 import com.compose.chi.domain.use_case.GetJokeByIdUseCase
@@ -14,7 +14,7 @@ import com.compose.chi.presentation.screens.ten_jokes_page.TenJokesViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
-val appKoinModule = module {
+val presentationKoinModule = module {
     factory { GetJokeUseCase(get()) }
     factory { GetTenJokesUseCase(get()) }
     factory { GetJokeByIdUseCase(get()) }
