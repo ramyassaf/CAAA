@@ -16,16 +16,14 @@ The codebase is intended to serve as:
 
 ## Architecture overview
 
-The project follows a three-layer Clean Architecture model enforced by Gradle modules:
+The project follows a layered Clean Architecture model enforced by Gradle modules:
 
 ```text
-:app  ───────► :domain
-  │              ▲
-  └───────► :data
-             │
-             └────► :domain
+:app ──────► :presentation ──────► :domain
+  │                                    ▲
+  └────────► :data ────────────────────┘
 ```
-At the Gradle level, `:app` depends on `:data` because the Android application module owns app startup and Koin composition. At the Clean Architecture layer level, presentation still follows the stricter dependency rule:
+At the Gradle level, `:app` depends on `:presentation` and `:data` because the Android application module owns app startup and Koin composition. At the Clean Architecture layer level, presentation still follows the stricter dependency rule:
 
 ```text
 presentation ─────► domain ◄───── data
@@ -38,7 +36,7 @@ presentation ─────► domain ◄───── data
 - **`:presentation`** — UI and presentation logic. Contains the Compose screens, `ViewModel`s, navigation, theme, UI error mapping, and the presentation-level Koin module (`presentationKoinModule`, which wires use cases and ViewModels). It depends only on `:domain`.
 - **`:app`** — Android application and composition root. Contains `ChiApplication` (starts Koin and installs the data and presentation modules), `MainActivity`, and app-specific concerns such as analytics. It depends on `:presentation` and on `:data` only to wire concrete implementations at the composition root.
 
-The important distinction is that `:app` as an Android application module can see `:data`, but presentation code must not use data implementation details directly. A Konsist rule enforces that only `ChiApplication` may import the data Koin module.
+The important distinction is that `:app`, as the Android application module, can see `:data`, while `:presentation` cannot — it depends only on `:domain`, so UI code can never reach data implementation details. Within `:app`, two Konsist rules keep that exception narrow: only `ChiApplication` may import from `:data`, and only the data Koin module.
 
 Detailed modularization documentation is available in [`docs/modularization.md`](docs/modularization.md).
 
@@ -123,7 +121,7 @@ The current test suite covers:
 - **Repository implementation** — `JokeRepositoryImpl` is tested in `:data` against mocked API and DAO dependencies for remote success/error mapping, local persistence mapping, cancellation propagation, and mapper usage.
 - **Domain-safe error handling** — Retrofit, HTTP, IO/network, Room, DAO, persistence, unknown, and cancellation paths are covered at the data boundary.
 - **Mappers** — DTO/entity/domain mapping is tested explicitly, including `isFavourite` preservation.
-- **ViewModels** — all four screen ViewModels are tested in `:app` with Turbine and a shared domain test fixture repository to verify StateFlow behavior.
+- **ViewModels** — all four screen ViewModels are tested in `:presentation` with Turbine and a shared domain test fixture repository to verify StateFlow behavior.
 - **Room DAO** — instrumented tests live in `:data` and use an in-memory Room database for insert, query, favourite filtering, liked-state lookup, and delete-all behavior.
 - **Architecture rules** — a Gradle architecture check enforces the module dependency graph; Konsist tests enforce domain purity, data/repository placement, use-case shape, composition root boundaries, remote API conventions, project-wide wildcard import rules, and clean-boundary restrictions.
 - **Shared test fixtures** — domain fixtures provide canonical `Joke` samples and `FakeJokeRepository`; data fixtures provide DTO/entity factories without duplicating domain test helpers.
@@ -235,6 +233,11 @@ Completed:
   - Package-level Clean Architecture boundaries are now backed by Gradle module graph enforcement and Konsist app-layer rules.
   - Tests and architecture suites were moved to the modules that own the code they verify.
   - Shared domain/data test helpers were consolidated through Gradle test fixtures.
+
+- **Module architecture verification**
+  - A `build-logic` convention plugin registers a `verifyModuleArchitecture` task that checks the allowed module dependency graph on every build.
+  - Wired into the `check` lifecycle and run as a dedicated CI quality gate.
+  - Module dependency-direction enforcement moved from source-level Konsist rules to this structural build check.
 
 Planned:
 

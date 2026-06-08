@@ -4,7 +4,7 @@ Notes on how the test suite is laid out, what each layer protects, and what to r
 
 CAAA currently has:
 
-- **81 JVM unit tests** across `:domain`, `:data`, and `:app`.
+- **81 JVM unit tests** across `:domain`, `:data`, `:presentation`, and `:app`.
 - **5 Room DAO instrumented tests** in `:data`.
 - **86 tests total**.
 
@@ -55,7 +55,9 @@ data/src/androidTest/java/com/compose/chi/data/database/
 └── JokeDaoTest.kt                 In-memory Room DAO tests
 
 app/src/test/java/com/compose/chi/
-├── architecture/                  App-layer and project-wide architecture rules
+└── architecture/                  App-layer and project-wide architecture rules
+
+presentation/src/test/java/com/compose/chi/
 ├── presentation/screens/<feature>/  Per-screen ViewModel tests
 └── testing/                       MainDispatcherRule
 ```
@@ -95,7 +97,7 @@ Because the repository owns this mapping, use cases remain thin and their tests 
 
 ## Shared helpers
 
-`MainDispatcherRule` lives in `:app` test sources because it is used by ViewModel tests.
+`MainDispatcherRule` lives in `:presentation` test sources because it is used by ViewModel tests.
 
 Domain-level fixtures live in `:domain` test fixtures:
 
@@ -142,7 +144,7 @@ The entity test protects against a previous regression where `JokeEntity.toJoke(
 
 ### ViewModels
 
-ViewModel tests live in `:app` and drive real use cases backed by `FakeJokeRepository`. Turbine handles StateFlow assertions.
+ViewModel tests live in `:presentation` and drive real use cases backed by `FakeJokeRepository`. Turbine handles StateFlow assertions.
 
 Useful rules when adding more:
 
@@ -186,6 +188,7 @@ Run a specific module's JVM tests:
 ```bash
 ./gradlew :domain:test
 ./gradlew :data:test
+./gradlew :presentation:test
 ./gradlew :app:test
 ```
 
