@@ -26,7 +26,7 @@ presentation ─────► domain ◄───── data
 - `:data` depends on `:domain`.
 - `:domain` depends on no project modules.
 
-Gradle enforces the module arrows. Konsist enforces the stricter app-internal rule that presentation code inside `:app` must not import data implementation details.
+Module dependency direction is verified by a Gradle architecture check, while Konsist remains focused on code-shape rules that the Gradle module graph does not express.
 
 ---
 
@@ -56,7 +56,7 @@ multiple people touch it, or you ever want KMP, do it early.
 
 ---
 
-## The three modules in detail
+## The four modules in detail
 
 ### `:domain` — the business core
 
@@ -108,26 +108,42 @@ An Android library module. Depends on `:domain`.
 - A Koin module that wires the data graph (`dataKoinModule`).
 
 **Notable boundary rule:** `:data` does not depend on `:app` or
-presentation. That arrow is forbidden by Gradle.
+`:presentation`. That arrow is forbidden by Gradle.
 
-### `:app` — the composition root
+### `:presentation` — the UI layer
 
-The Android application module. Depends on both `:domain` and `:data`.
+An Android library module. Depends only on `:domain`.
 
 **Lives here:**
 
-- Compose UI, navigation, theme.
-- ViewModels.
-- Application class (`ChiApplication`).
-- App-level Koin module (`appKoinModule`) — wires use cases and
-  ViewModels.
-- Analytics, anything else that's app-specific.
+- Compose screens, their UI state, and ViewModels.
+- Navigation (`AppNavHost`, `Screen`, and bottom-navigation components).
+- Theme (colors, typography, shapes, dimensions).
+- UI error mapping (`DomainErrorUiMapper`) — turns `DomainError` into
+  user-facing messages.
+- The Compose entry point (`ChiPresentationRoot`), hosted by `MainActivity`.
+- A Koin module that wires use cases and ViewModels (`presentationKoinModule`).
 
-**The composition rule:** only `ChiApplication` and the
-`com.compose.chi.di` package are allowed to import `com.compose.chi.data.*`.
-Presentation, navigation, theme, and analytics depend on `:domain`
-abstractions — never on concrete data classes. This is enforced by a
-Konsist test, not just by convention.
+**Notable boundary rule:** `:presentation` depends only on `:domain`, never on
+`:data`. The dependency direction is enforced by `verifyModuleArchitecture`.
+
+### `:app` — the composition root
+
+The Android application module. Depends on `:presentation` and `:data`.
+
+**Lives here:**
+
+- Application class (`ChiApplication`) — the composition root; starts Koin
+  and installs `dataKoinModule` and `presentationKoinModule`.
+- `MainActivity` — the Android entry point; hosts the Compose content from
+  `:presentation`.
+- Analytics and anything else that is app-specific.
+
+**The composition rule:** `:app` can see `:data`, but only `ChiApplication`
+may touch it — and only to install the data Koin module. Every other `:app`
+file (such as `MainActivity` and analytics) imports nothing from
+`com.compose.chi.data`. Two `AppLayerArchitectureTest` rules enforce this, not
+just by convention.
 
 ---
 
@@ -253,7 +269,7 @@ Koin module wiring everything. Split it along ownership lines:
 - `AppDatabase`, `JokeDao`.
 - `JokeRepository` binding to `JokeRepositoryImpl`.
 
-**`appKoinModule` (lives in `:app`):**
+**`presentationKoinModule` (lives in `:presentation`):**
 
 - Use-case factories.
 - ViewModel bindings.
@@ -263,7 +279,7 @@ Koin module wiring everything. Split it along ownership lines:
 ```kotlin
 startKoin {
     androidContext(this@ChiApplication)
-    modules(dataKoinModule, appKoinModule)
+    modules(dataKoinModule, presentationKoinModule)
 }
 ```
 
@@ -342,40 +358,55 @@ In CHI:
   wildcard imports, no production TODOs, no empty files) and
   `AppLayerArchitectureTest`.
 
+The root `verifyModuleArchitecture` task owns module dependency direction:
+`:domain` has no production project dependencies, `:data` and `:presentation`
+depend only on `:domain`, and `:app` depends only on `:presentation` and
+`:data`.
+
+Encoding this contract as a Gradle plugin keeps it executable rather than
+aspirational: the module graph is verified on every local and CI build, so a
+dependency that breaks the intended direction fails immediately instead of
+slipping through review. It also gives the architecture one authoritative
+definition that travels with the code as the project grows.
+
 `AppLayerArchitectureTest` is the one to copy into your project even if
 you skip the others. It encodes the composition-root rule:
 
 ```kotlin
 @Test
-fun `only ChiApplication and app DI composition may import the data layer`() {
+fun `only ChiApplication may import the data layer`() {
     Konsist.scopeFromProject()
         .files
         .withPath("..app/src/main/java/com/compose/chi..")
         .withoutPath("..app/src/main/java/com/compose/chi/ChiApplication.kt")
-        .withoutPath("..app/src/main/java/com/compose/chi/di..")
         .imports.assertFalse { import ->
             import.name.startsWith("com.compose.chi.data.")
         }
 }
 ```
 
-This is the test that catches the auto-import slip. A ViewModel can't
-silently `import com.compose.chi.data.remote.JokeApi` anymore; CI fails
-with an architecture violation pointing straight at the file.
+This catches the auto-import slip in `:app`: a file such as `MainActivity`
+can't silently `import com.compose.chi.data.remote.JokeApi`; CI fails with an
+architecture violation pointing straight at the file.
 
-Pair it with a stricter Retrofit guard for defence in depth:
+A second rule narrows the one allowed exception — the composition root may
+reach into `:data` for the Koin module and nothing else:
 
 ```kotlin
 @Test
-fun `app layer must not reference Retrofit types`() {
-    appProductionFiles.imports.assertFalse { import ->
-        import.name.contains("retrofit2")
-    }
+fun `ChiApplication may import only the data Koin module from data`() {
+    Konsist.scopeFromProject()
+        .files
+        .withPath("..app/src/main/java/com/compose/chi/ChiApplication.kt")
+        .imports.assertFalse { import ->
+            import.name.startsWith("com.compose.chi.data.") &&
+                import.name != "com.compose.chi.data.di.dataKoinModule"
+        }
 }
 ```
 
-Gradle already keeps retrofit2 off `:app`'s compile classpath, but this
-catches it earlier — at code-review time, before the build ever runs.
+Together the two rules keep the `:data` surface in `:app` as small as it can
+be: one file, one import.
 
 ---
 
@@ -387,6 +418,7 @@ Two layers, both required:
 
 ```bash
 ./gradlew clean
+./gradlew verifyModuleArchitecture
 ./gradlew test           # all module unit tests + architecture tests
 ./gradlew assembleDebug
 ./gradlew connectedDebugAndroidTest   # DAO tests, needs device/emulator
@@ -424,6 +456,6 @@ encode (loading states, navigation timing, error messaging).
   meet abstract contracts.
 
 None of this is novel. It is disciplined application of Clean
-Architecture: Gradle enforces the inter-module arrows, and Konsist closes
+Architecture: Gradle module graph enforcement protects the inter-module arrows, and Konsist closes
 the remaining app-internal gap created by the composition root. That
 discipline is what makes the next ten features easier to add.

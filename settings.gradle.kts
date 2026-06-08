@@ -1,4 +1,5 @@
 pluginManagement {
+    includeBuild("build-logic")
     repositories {
         google()
         mavenCentral()
@@ -14,5 +15,6 @@ dependencyResolutionManagement {
 }
 rootProject.name = "CHI"
 include(":app")
+include(":presentation")
 include(":domain")
 include(":data")
