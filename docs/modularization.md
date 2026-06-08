@@ -1,17 +1,21 @@
 # Modularization
 
-The app lives in three Gradle modules with a strict dependency direction:
+The app lives in four Gradle modules with a strict dependency direction:
 
 ```text
-          ┌─────────┐
-          │  :app   │   Android application
-          └────┬────┘
-       ┌───────┴────────┐
-       ▼                ▼
-  ┌─────────┐      ┌─────────┐
-  │ :domain │ ◀─── │  :data  │
-  └─────────┘      └─────────┘
-   pure Kotlin/JVM   Android library
+                ┌──────────┐
+                │   :app   │           Android application
+                └────┬─────┘
+            ┌────────┴────────┐
+            ▼                 ▼
+    ┌───────────────┐   ┌──────────┐
+    │ :presentation │   │  :data   │   Android libraries
+    └───────┬───────┘   └────┬─────┘
+            └────────┬────────┘
+                     ▼
+               ┌──────────┐
+               │ :domain  │           pure Kotlin/JVM
+               └──────────┘
 ```
 That physical module graph should not be confused with the logical Clean Architecture layer graph:
 
@@ -21,8 +25,8 @@ presentation ─────► domain ◄───── data
    UI state         contracts       Room / Retrofit
 ```
 
-- `:app` depends on both because it is the Android application and composition root. 
-- **Presentation** inside `:app` depends on `:domain` only.
+- `:app` depends on `:presentation` and `:data` because it is the Android application and composition root. 
+- `:presentation` depends on `:domain` only.
 - `:data` depends on `:domain`.
 - `:domain` depends on no project modules.
 
@@ -44,9 +48,10 @@ Moving to Gradle modules buys you three concrete things:
 1. **Enforced architecture.** `:domain` literally cannot see Room, Retrofit,
    Koin, or Android — they're not on its classpath. The compiler becomes
    your reviewer.
-2. **Clearer incremental build boundaries.** UI changes stay in `:app`,
-   domain changes stay in `:domain`, and infrastructure changes stay in
-   `:data`, giving Gradle better separation than a single large module.
+2. **Clearer incremental build boundaries.** UI changes stay in
+   `:presentation`, domain changes stay in `:domain`, and infrastructure
+   changes stay in `:data`, giving Gradle better separation than a single
+   large module.
 3. **A reusable core.** `:domain` is pure Kotlin/JVM, so it is the natural
    candidate for a future Multiplatform extraction or other non-Android
    reuse with minimal architectural change.
@@ -163,6 +168,7 @@ rootProject.name = "CHI"
 include(":app")
 include(":domain")
 include(":data")
+include(":presentation")
 ```
 
 **Root `build.gradle.kts`** — use the plugins DSL with `apply false`,
@@ -232,13 +238,22 @@ dependencies {
 }
 ```
 
-**`app/build.gradle.kts`** — pulls in both:
+**`presentation/build.gradle.kts`** — Android library, Compose UI:
 
 ```kotlin
 dependencies {
     implementation(project(":domain"))
-    implementation(project(":data"))
     // Compose, navigation, lifecycle, Koin-android, koin-androidx-compose, …
+}
+```
+
+**`app/build.gradle.kts`** — wires presentation and data at the composition root:
+
+```kotlin
+dependencies {
+    implementation(project(":presentation"))
+    implementation(project(":data"))
+    // Koin-android, activity-compose, core-ktx, …
 }
 ```
 
@@ -248,7 +263,8 @@ new modules yet.
 ### 2. Move sources, layer by layer
 
 Move `:domain` first (it has the fewest dependencies), then `:data`
-(which depends on `:domain`), then clean up `:app` last.
+and `:presentation` (which both depend on `:domain`), then clean up
+`:app` last.
 
 ```text
 app/src/main/java/com/compose/chi/domain/**  →  domain/src/main/java/com/compose/chi/domain/**
@@ -301,11 +317,11 @@ Each layer's tests move with the layer:
 | Mapper tests (DTO ↔ domain, entity ↔ domain) | `:data/src/test/` |
 | Repository implementation tests | `:data/src/test/` |
 | Room DAO instrumented tests | `:data/src/androidTest/` |
-| ViewModel / presentation tests | `:app/src/test/` |
+| ViewModel / presentation tests | `:presentation/src/test/` |
 
 ### 5. Share test fixtures the right way
 
-ViewModel tests in `:app` need
+ViewModel tests in `:presentation` need
 `FakeJokeRepository` (which only knows `:domain` types). Use-case tests
 in `:domain` want the same canonical `Joke` samples. Mapper tests in
 `:data` want both domain `Joke` values and the corresponding DTOs.

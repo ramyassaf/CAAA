@@ -2,6 +2,26 @@
 
 All notable changes to CAAA are documented here.
 
+## June 2026 - Presentation module and build-logic architecture verification
+
+### Added
+
+- `:presentation` Android library module containing the Compose UI, screens, ViewModels, navigation, theme, UI error mapping (`DomainErrorUiMapper`), and `presentationKoinModule`.
+- `build-logic` included build with a `module-architecture` convention plugin (`com.compose.chi.module-architecture`) that registers the `verifyModuleArchitecture` task, wired into `check`, to verify the allowed module dependency graph.
+- A dedicated CI step running `verifyModuleArchitecture` as its own quality gate, separate from unit tests.
+
+### Changed
+
+- Compose UI, navigation, theme, ViewModels, and presentation DI moved from `:app` into the new `:presentation` module. `:app` now contains `ChiApplication`, `MainActivity`, and analytics, and depends on `:presentation` and `:data`.
+- Dependency injection split updated: `presentationKoinModule` (in `:presentation`) wires use cases and ViewModels, and `ChiApplication` loads `dataKoinModule` and `presentationKoinModule` at startup.
+- `AppLayerArchitectureTest` rules tightened: only `ChiApplication` may import from `com.compose.chi.data`, and only the data Koin module.
+- Module dependency-direction enforcement moved from source-level Konsist rules to the structural `verifyModuleArchitecture` build check; Konsist stays focused on code-shape rules.
+- Documentation (`README.md`, `docs/modularization.md`, `docs/tests/Testing.md`) updated for the four-module layout.
+
+### Removed
+
+- The app-layer Retrofit Konsist guardrail; module boundaries and code review cover that concern.
+
 ## May 2026 - Three-module modularization
 
 ### Added
