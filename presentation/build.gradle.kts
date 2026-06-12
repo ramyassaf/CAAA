@@ -1,6 +1,7 @@
 plugins {
     id("com.compose.chi.android.library")
     id("com.compose.chi.android.compose")
+    id("com.compose.chi.koin")
 }
 
 android {
@@ -22,13 +23,9 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.viewmodel.savedstate)
 
-    implementation(platform(libs.koin.bom))
-    implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
 
     testImplementation(testFixtures(project(":domain")))
-    testImplementation(libs.junit)
-    testImplementation(libs.konsist)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.turbine)
 }

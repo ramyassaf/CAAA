@@ -26,6 +26,8 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             extensions.configure<LibraryExtension> {
                 configureKotlinAndroid(this)
             }
+
+            configureUniversalTestDependencies()
         }
     }
 }

@@ -1,6 +1,7 @@
 plugins {
     id("com.compose.chi.android.application")
     id("com.compose.chi.android.compose")
+    id("com.compose.chi.koin")
 }
 
 android {
@@ -36,11 +37,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
 
-    testImplementation(libs.junit)
-    testImplementation(libs.konsist)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-
-    implementation(platform(libs.koin.bom))
-    implementation(libs.koin.android)
 }

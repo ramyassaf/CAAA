@@ -35,6 +35,8 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                     }
                 }
             }
+
+            configureUniversalTestDependencies()
         }
     }
 }

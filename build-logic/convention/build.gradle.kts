@@ -27,6 +27,10 @@ gradlePlugin {
             id = "com.compose.chi.android.library"
             implementationClass = "com.compose.chi.buildlogic.AndroidLibraryConventionPlugin"
         }
+        register("koin") {
+            id = "com.compose.chi.koin"
+            implementationClass = "com.compose.chi.buildlogic.KoinConventionPlugin"
+        }
         register("kotlinJvm") {
             id = "com.compose.chi.kotlin.jvm"
             implementationClass = "com.compose.chi.buildlogic.KotlinJvmConventionPlugin"

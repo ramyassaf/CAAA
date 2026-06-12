@@ -23,6 +23,8 @@ class KotlinJvmConventionPlugin : Plugin<Project> {
             extensions.configure<KotlinJvmProjectExtension> {
                 jvmToolchain(libs.version("java").toInt())
             }
+
+            configureUniversalTestDependencies()
         }
     }
 }

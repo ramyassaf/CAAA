@@ -1,5 +1,6 @@
 plugins {
     id("com.compose.chi.android.library")
+    id("com.compose.chi.koin")
     alias(libs.plugins.devToolsKsp)
 }
 
@@ -24,17 +25,11 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
-    // Koin — data-level providers live here
-    implementation(platform(libs.koin.bom))
-    implementation(libs.koin.android)
-
     // Test fixtures (data-specific Dto/Entity factories) reuse :domain Joke factories
     testFixturesImplementation(testFixtures(project(":domain")))
 
     // Unit tests
     testImplementation(testFixtures(project(":domain")))
-    testImplementation(libs.junit)
-    testImplementation(libs.konsist)
     testImplementation(libs.mockk)
     testImplementation(libs.turbine)
     testImplementation(libs.kotlinx.coroutines.test)
