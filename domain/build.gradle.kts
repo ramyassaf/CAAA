@@ -1,10 +1,6 @@
 plugins {
-    alias(libs.plugins.kotlinJvm)
+    id("com.compose.chi.kotlin.jvm")
     `java-test-fixtures`
-}
-
-kotlin {
-    jvmToolchain(17)
 }
 
 dependencies {

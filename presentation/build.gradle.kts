@@ -1,22 +1,10 @@
 plugins {
-    alias(libs.plugins.androidLibrary)
+    id("com.compose.chi.android.library")
     alias(libs.plugins.composeCompiler)
 }
 
 android {
     namespace = "com.compose.chi.presentation"
-    compileSdk = 36
-
-    defaultConfig {
-        minSdk = 24
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
 
     buildFeatures {
         compose = true

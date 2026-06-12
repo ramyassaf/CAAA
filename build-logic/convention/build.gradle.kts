@@ -15,6 +15,18 @@ dependencies {
 
 gradlePlugin {
     plugins {
+        register("androidApplication") {
+            id = "com.compose.chi.android.application"
+            implementationClass = "com.compose.chi.buildlogic.AndroidApplicationConventionPlugin"
+        }
+        register("androidLibrary") {
+            id = "com.compose.chi.android.library"
+            implementationClass = "com.compose.chi.buildlogic.AndroidLibraryConventionPlugin"
+        }
+        register("kotlinJvm") {
+            id = "com.compose.chi.kotlin.jvm"
+            implementationClass = "com.compose.chi.buildlogic.KotlinJvmConventionPlugin"
+        }
         register("moduleArchitecture") {
             id = "com.compose.chi.module-architecture"
             implementationClass = "com.compose.chi.buildlogic.ModuleArchitecturePlugin"

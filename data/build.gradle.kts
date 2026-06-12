@@ -1,22 +1,10 @@
 plugins {
-    alias(libs.plugins.androidLibrary)
+    id("com.compose.chi.android.library")
     alias(libs.plugins.devToolsKsp)
 }
 
 android {
     namespace = "com.compose.chi.data"
-    compileSdk = 36
-
-    defaultConfig {
-        minSdk = 24
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
 
     testFixtures {
         enable = true
