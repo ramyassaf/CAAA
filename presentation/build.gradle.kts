@@ -1,23 +1,17 @@
 plugins {
     id("com.compose.chi.android.library")
-    alias(libs.plugins.composeCompiler)
+    id("com.compose.chi.android.compose")
 }
 
 android {
     namespace = "com.compose.chi.presentation"
-
-    buildFeatures {
-        compose = true
-    }
 }
 
 dependencies {
     implementation(project(":domain"))
 
-    implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.material3)
@@ -37,6 +31,4 @@ dependencies {
     testImplementation(libs.konsist)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.turbine)
-
-    debugImplementation(libs.androidx.ui.tooling)
 }

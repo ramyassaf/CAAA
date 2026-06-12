@@ -19,6 +19,10 @@ gradlePlugin {
             id = "com.compose.chi.android.application"
             implementationClass = "com.compose.chi.buildlogic.AndroidApplicationConventionPlugin"
         }
+        register("androidCompose") {
+            id = "com.compose.chi.android.compose"
+            implementationClass = "com.compose.chi.buildlogic.AndroidComposeConventionPlugin"
+        }
         register("androidLibrary") {
             id = "com.compose.chi.android.library"
             implementationClass = "com.compose.chi.buildlogic.AndroidLibraryConventionPlugin"

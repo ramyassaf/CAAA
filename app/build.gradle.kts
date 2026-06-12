@@ -1,6 +1,6 @@
 plugins {
     id("com.compose.chi.android.application")
-    alias(libs.plugins.composeCompiler)
+    id("com.compose.chi.android.compose")
 }
 
 android {
@@ -24,7 +24,6 @@ android {
         }
     }
     buildFeatures {
-        compose = true
         buildConfig = true
     }
 }

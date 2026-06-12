@@ -1,8 +1,10 @@
 package com.compose.chi.buildlogic
 
 import org.gradle.api.Project
+import org.gradle.api.artifacts.MinimalExternalModuleDependency
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.artifacts.VersionCatalogsExtension
+import org.gradle.api.provider.Provider
 import org.gradle.kotlin.dsl.getByType
 
 /**
@@ -25,3 +27,11 @@ internal fun VersionCatalog.version(alias: String): String =
     findVersion(alias)
         .orElseThrow { IllegalStateException("Version '$alias' is missing from the version catalog.") }
         .requiredVersion
+
+/**
+ * Returns the library declared under [alias] in `[libraries]`, with the same
+ * fail-eagerly contract as [version].
+ */
+internal fun VersionCatalog.library(alias: String): Provider<MinimalExternalModuleDependency> =
+    findLibrary(alias)
+        .orElseThrow { IllegalStateException("Library '$alias' is missing from the version catalog.") }
