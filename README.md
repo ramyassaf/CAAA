@@ -1,6 +1,6 @@
 # CAAA — Clean Architecture Jetpack Compose Android Skeleton
 
-> **Status:** Actively maintained and continuously modernized. The project now uses a module-level Clean Architecture setup (`:domain`, `:data`, `:presentation`, `:app`) with Android toolchain/runtime modernization, Koin dependency injection, expanded test coverage, Gradle module graph enforcement, Konsist architecture guardrails, and GitHub Actions CI verification. The next major milestone is Phase 6: static analysis and formatting enforcement with ktlint, Spotless, and Detekt.
+> **Status:** Actively maintained and continuously modernized. The project now uses a module-level Clean Architecture setup (`:domain`, `:data`, `:presentation`, `:app`) with Android toolchain/runtime modernization, `build-logic` convention plugins, Koin dependency injection, expanded test coverage, Gradle module graph enforcement, Konsist architecture guardrails, and GitHub Actions CI verification. The next major milestone is Phase 6: static analysis and formatting enforcement with ktlint, Spotless, and Detekt.
 
 ## What this project is
 
@@ -67,13 +67,15 @@ Detailed modularization documentation is available in [`docs/modularization.md`]
 | DI | Koin |
 | Testing | JUnit 4, MockK, `kotlinx-coroutines-test`, Turbine, Konsist, in-memory Room DAO tests, Gradle test fixtures |
 | CI | GitHub Actions (`./gradlew verifyModuleArchitecture test`, `./gradlew assembleDebug`) |
-| Build | Gradle Kotlin DSL with Version Catalog (`libs.versions.toml`) |
+| Build | Gradle Kotlin DSL, Version Catalog (`libs.versions.toml`), `build-logic` convention plugins, configuration cache |
 | Annotation processing | KSP (Room compiler) |
 
 ## Project structure
 
 ```text
 .
+├── build-logic/                 # Convention plugins: module archetypes, Compose, Koin, architecture check
+│   └── convention/src/main/kotlin/com/compose/chi/buildlogic/
 ├── app/                         # Android application: composition root + entry point
 │   └── src/main/java/com/compose/chi/
 │       ├── ChiApplication.kt    # Koin startup and composition root
@@ -162,12 +164,13 @@ Detailed testing documentation is available in `docs/tests/Testing.md`, includin
 | 18 | GitHub Actions CI verification                                   |   ✅   |
 | 19 | Multi-module split (`:domain`, `:data`, `:presentation`, `:app`)         |   ✅   |
 | 20 | Gradle test fixtures for shared test helpers                     |   ✅   |
-| 21 | Static analysis with ktlint / Spotless / Detekt                  |   ⏳   |
-| 22 | Offline-first repository pattern                                 |   ⏳   |
-| 23 | MockWebServer API integration tests                              |   ⏳   |
-| 24 | Network connectivity monitoring                                  |   ⏳   |
-| 25 | DataStore                                                        |   ⏳   |
-| 26 | Kotlin Multiplatform exploration                                 |   ⏳   |
+| 21 | Convention plugins (`build-logic`) + configuration cache         |   ✅   |
+| 22 | Static analysis with ktlint / Spotless / Detekt                  |   ⏳   |
+| 23 | Offline-first repository pattern                                 |   ⏳   |
+| 24 | MockWebServer API integration tests                              |   ⏳   |
+| 25 | Network connectivity monitoring                                  |   ⏳   |
+| 26 | DataStore                                                        |   ⏳   |
+| 27 | Kotlin Multiplatform exploration                                 |   ⏳   |
 
 ## Roadmap
 
@@ -238,6 +241,12 @@ Completed:
   - A `build-logic` convention plugin registers a `verifyModuleArchitecture` task that checks the allowed module dependency graph on every build.
   - Wired into the `check` lifecycle and run as a dedicated CI quality gate.
   - Module dependency-direction enforcement moved from source-level Konsist rules to this structural build check.
+
+- **Build conventions and Gradle modernization**
+  - Shared module configuration extracted into `build-logic` convention plugins: application, library, Compose, Kotlin JVM, and Koin archetypes.
+  - SDK levels and the JVM target centralized in the version catalog.
+  - Architecture verification reworked to be configuration-cache compatible.
+  - Configuration cache, parallel execution, local build cache, and type-safe project accessors enabled.
 
 Planned:
 

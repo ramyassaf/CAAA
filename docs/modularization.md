@@ -161,9 +161,17 @@ you go.
 
 Before moving any source files, get the module shells in place.
 
-**`settings.gradle.kts`:**
+**`settings.gradle.kts`** — include the modules, the `build-logic` build
+that hosts the convention plugins, and type-safe project accessors:
 
 ```kotlin
+pluginManagement {
+    includeBuild("build-logic")
+    // repositories…
+}
+
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 rootProject.name = "CHI"
 include(":app")
 include(":domain")
@@ -173,10 +181,13 @@ include(":presentation")
 
 **Root `build.gradle.kts`** — use the plugins DSL with `apply false`,
 not the legacy `buildscript { classpath(...) }` pattern. The catalog
-controls every plugin version in one place:
+controls every plugin version in one place, and keeping the plugins on
+the root classpath is what lets the convention plugins below apply them
+by id:
 
 ```kotlin
 plugins {
+    id("com.compose.chi.module-architecture")
     alias(libs.plugins.androidApplication) apply false
     alias(libs.plugins.androidLibrary) apply false
     alias(libs.plugins.composeCompiler) apply false
@@ -192,68 +203,105 @@ catalog became the Studio default around AGP 8. Use both. The old
 works but mirrors plugins as library coordinates just to feed
 `classpath()` — it's the legacy form.
 
+**Convention plugins carry the shared configuration.** Without them,
+every Android module repeats the same `compileSdk`, `minSdk`, Java
+level, and test-runner block, and the next SDK bump is a three-file
+edit. The `build-logic` included build extracts that into one plugin
+per module archetype, plus capability plugins that stack on top:
+
+| Plugin id | Owns | Applied by |
+|---|---|---|
+| `com.compose.chi.android.application` | AGP app plugin, shared Android config, target SDK, packaging | `:app` |
+| `com.compose.chi.android.library` | AGP library plugin, shared Android config | `:data`, `:presentation` |
+| `com.compose.chi.android.compose` | Compose compiler, `compose` build feature, Compose BOM, preview tooling | `:app`, `:presentation` |
+| `com.compose.chi.kotlin.jvm` | Kotlin JVM plugin, JVM toolchain | `:domain` |
+| `com.compose.chi.koin` | Koin BOM + koin-android | `:app`, `:presentation`, `:data` |
+| `com.compose.chi.module-architecture` | the `verifyModuleArchitecture` task | root |
+
+SDK levels and the Java version live in the catalog's `[versions]`
+block, read by the convention plugins — one source of truth for both
+worlds. JUnit and Konsist also arrive through the base conventions,
+because every module colocates architecture tests: that is project
+policy, not a per-module choice. Test libraries that describe what a
+module actually exercises (MockK, Turbine, coroutines-test) stay
+declared per module, so each build script still answers what its
+module really uses.
+
 **`domain/build.gradle.kts`** — pure Kotlin/JVM, no AGP:
 
 ```kotlin
 plugins {
-    alias(libs.plugins.kotlinJvm)
+    id("com.compose.chi.kotlin.jvm")
     `java-test-fixtures`   // see "Sharing test code" below
-}
-
-kotlin {
-    jvmToolchain(17)
 }
 
 dependencies {
     implementation(libs.kotlinx.coroutines.core)
-    // test deps only
+    // module-specific test deps only
 }
 ```
 
-No separate `java { sourceCompatibility = … }` block needed —
-`kotlin.jvmToolchain(17)` drives both Kotlin and Java compile targets.
+No `kotlin { jvmToolchain(…) }` or `java { … }` block needed — the
+convention plugin pins the toolchain from the catalog.
 
 **`data/build.gradle.kts`** — Android library, KSP for Room:
 
 ```kotlin
 plugins {
-    alias(libs.plugins.androidLibrary)
+    id("com.compose.chi.android.library")
+    id("com.compose.chi.koin")
     alias(libs.plugins.devToolsKsp)
 }
 
 android {
     namespace = "com.compose.chi.data"
-    compileSdk = 36
-    defaultConfig { minSdk = 24 }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
     testFixtures { enable = true }
 }
 
 dependencies {
-    implementation(project(":domain"))
-    // Retrofit, OkHttp, Room, Koin-android, …
+    implementation(projects.domain)
+    // Retrofit, OkHttp, Room, …
 }
 ```
 
 **`presentation/build.gradle.kts`** — Android library, Compose UI:
 
 ```kotlin
+plugins {
+    id("com.compose.chi.android.library")
+    id("com.compose.chi.android.compose")
+    id("com.compose.chi.koin")
+}
+
+android {
+    namespace = "com.compose.chi.presentation"
+}
+
 dependencies {
-    implementation(project(":domain"))
-    // Compose, navigation, lifecycle, Koin-android, koin-androidx-compose, …
+    implementation(projects.domain)
+    // Compose UI set, navigation, lifecycle, koin-androidx-compose, …
 }
 ```
 
 **`app/build.gradle.kts`** — wires presentation and data at the composition root:
 
 ```kotlin
+plugins {
+    id("com.compose.chi.android.application")
+    id("com.compose.chi.android.compose")
+    id("com.compose.chi.koin")
+}
+
+android {
+    namespace = "com.compose.chi"
+    defaultConfig { applicationId = "com.compose.chi" /* versioning */ }
+    // build types and app-only build features stay here
+}
+
 dependencies {
-    implementation(project(":presentation"))
-    implementation(project(":data"))
-    // Koin-android, activity-compose, core-ktx, …
+    implementation(projects.presentation)
+    implementation(projects.data)
+    // activity-compose, core-ktx, …
 }
 ```
 
@@ -344,11 +392,11 @@ Consumers wire it up explicitly:
 
 ```kotlin
 // data/build.gradle.kts
-testFixturesImplementation(testFixtures(project(":domain")))
-testImplementation(testFixtures(project(":domain")))
+testFixturesImplementation(testFixtures(projects.domain))
+testImplementation(testFixtures(projects.domain))
 
-// app/build.gradle.kts
-testImplementation(testFixtures(project(":domain")))
+// presentation/build.gradle.kts
+testImplementation(testFixtures(projects.domain))
 ```
 
 The result: every fixture has a single canonical source, and consumers

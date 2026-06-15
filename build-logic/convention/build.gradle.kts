@@ -5,10 +5,12 @@ plugins {
 group = "com.compose.chi.buildlogic"
 
 dependencies {
-    // compileOnly: convention plugins compile against the AGP and Kotlin
-    // Gradle APIs, while the main build provides them at runtime through the
-    // root plugins block (`apply false`), keeping a single copy on the build
-    // classpath.
+    // compileOnly: the convention plugins need AGP's DSL types (Application/Library/
+    // CommonExtension — used by the Android plugins) and the Kotlin JVM DSL
+    // (KotlinJvmProjectExtension — used only by the kotlin.jvm plugin for :domain)
+    // to COMPILE. The root `plugins { ... apply false }` block already puts these
+    // same artifacts on the build classpath at runtime, so we compile against them
+    // without contributing a second copy.
     compileOnly(libs.android.gradlePlugin)
     compileOnly(libs.kotlin.gradlePlugin)
 }

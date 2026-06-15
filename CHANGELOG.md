@@ -2,6 +2,39 @@
 
 All notable changes to CAAA are documented here.
 
+## June 2026 - Convention plugins and Gradle build modernization
+
+### Added
+
+- `build-logic` convention plugins, so each module declares its archetype instead of repeating configuration:
+  - `com.compose.chi.android.application` — AGP application plugin, shared Android config, target SDK, and packaging rules (`:app`).
+  - `com.compose.chi.android.library` — AGP library plugin plus the same shared Android config (`:data`, `:presentation`).
+  - `com.compose.chi.android.compose` — Compose compiler plugin, `compose` build feature, Compose BOM, and preview tooling; stacks on either Android archetype (`:app`, `:presentation`).
+  - `com.compose.chi.kotlin.jvm` — Kotlin JVM plugin with the shared JVM toolchain (`:domain`).
+  - `com.compose.chi.koin` — Koin BOM and koin-android for the DI-wired modules (`:app`, `:presentation`, `:data`).
+- Android SDK levels (`compileSdk`, `minSdk`, `targetSdk`) and the Java version are declared once in the version catalog `[versions]` block and read by the convention plugins.
+- JUnit 4 and Konsist now arrive through the base conventions: every module colocates architecture tests by policy, so the test toolchain is part of the archetype rather than a per-module declaration.
+
+### Changed
+
+- Module build scripts now declare only identity (namespace, application id, build types), opt-in features (test fixtures, KSP), and module-specific dependencies.
+- `verifyModuleArchitecture` is configuration-cache compatible: the module graph is snapshotted at configuration time into plain task inputs (`VerifyModuleArchitectureTask`), and the task action no longer reads `Project` state. Same contract, same violation messages.
+- Module dependencies use type-safe project accessors (`projects.domain`) instead of string paths.
+- Gradle execution modernized: configuration cache, parallel project execution, and the local build cache are enabled, and the daemon heap was raised to 4 GB.
+- The duplicated `kotlinxCoroutinesCore`/`kotlinxCoroutinesTest` version refs were merged into a single `kotlinxCoroutines` ref.
+
+### Notes
+
+- Test libraries that describe what a module actually exercises (MockK, Turbine, coroutines-test) intentionally stay declared per module, as do instrumented-test dependencies.
+- Runtime behavior, dependency versions, and the module graph are unchanged; this update only changes where build configuration lives.
+
+### Verification
+
+- `./gradlew.bat verifyModuleArchitecture` — configuration cache entry stored on the first run and reused on the second.
+- `./gradlew.bat test`
+- `./gradlew.bat assembleDebug`
+- Negative check: a temporarily injected `:presentation` → `:data` dependency fails `verifyModuleArchitecture` with the expected violation message.
+
 ## June 2026 - Presentation module and build-logic architecture verification
 
 ### Added
