@@ -9,7 +9,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":domain"))
+    implementation(projects.domain)
 
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
@@ -25,7 +25,7 @@ dependencies {
 
     implementation(libs.koin.androidx.compose)
 
-    testImplementation(testFixtures(project(":domain")))
+    testImplementation(testFixtures(projects.domain))
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.turbine)
 }

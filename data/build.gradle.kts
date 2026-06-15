@@ -13,7 +13,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":domain"))
+    implementation(projects.domain)
 
     // Retrofit / OkHttp
     implementation(libs.retrofit)
@@ -26,10 +26,10 @@ dependencies {
     ksp(libs.androidx.room.compiler)
 
     // Test fixtures (data-specific Dto/Entity factories) reuse :domain Joke factories
-    testFixturesImplementation(testFixtures(project(":domain")))
+    testFixturesImplementation(testFixtures(projects.domain))
 
     // Unit tests
-    testImplementation(testFixtures(project(":domain")))
+    testImplementation(testFixtures(projects.domain))
     testImplementation(libs.mockk)
     testImplementation(libs.turbine)
     testImplementation(libs.kotlinx.coroutines.test)
