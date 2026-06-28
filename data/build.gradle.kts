@@ -1,22 +1,11 @@
 plugins {
-    alias(libs.plugins.androidLibrary)
+    id("com.compose.chi.android.library")
+    id("com.compose.chi.koin")
     alias(libs.plugins.devToolsKsp)
 }
 
 android {
     namespace = "com.compose.chi.data"
-    compileSdk = 36
-
-    defaultConfig {
-        minSdk = 24
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
 
     testFixtures {
         enable = true
@@ -24,7 +13,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":domain"))
+    implementation(projects.domain)
 
     // Retrofit / OkHttp
     implementation(libs.retrofit)
@@ -36,17 +25,11 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
-    // Koin — data-level providers live here
-    implementation(platform(libs.koin.bom))
-    implementation(libs.koin.android)
-
     // Test fixtures (data-specific Dto/Entity factories) reuse :domain Joke factories
-    testFixturesImplementation(testFixtures(project(":domain")))
+    testFixturesImplementation(testFixtures(projects.domain))
 
     // Unit tests
-    testImplementation(testFixtures(project(":domain")))
-    testImplementation(libs.junit)
-    testImplementation(libs.konsist)
+    testImplementation(testFixtures(projects.domain))
     testImplementation(libs.mockk)
     testImplementation(libs.turbine)
     testImplementation(libs.kotlinx.coroutines.test)

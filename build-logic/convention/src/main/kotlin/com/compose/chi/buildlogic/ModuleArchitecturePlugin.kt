@@ -1,10 +1,10 @@
 package com.compose.chi.buildlogic
 
-import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ProjectDependency
+import org.gradle.kotlin.dsl.register
 
 /**
  * Convention plugin that enforces the project's Clean Architecture module dependency
@@ -13,11 +13,17 @@ import org.gradle.api.artifacts.ProjectDependency
  * Applied to the root project via `id("com.compose.chi.module-architecture")`, it registers
  * the `verifyModuleArchitecture` task, which fails the build whenever the module dependency
  * graph drifts from the intended architecture. Every module may depend only on the modules
- * listed in [allowedProjectDependencies]: `:domain` stays dependency-free, `:data` and
+ * listed in [architectureContract]: `:domain` stays dependency-free, `:data` and
  * `:presentation` may depend only on `:domain`, and `:app` (the composition root) may depend
  * only on `:presentation` and `:data`.
  *
- * The check reads declared dependencies through Gradle's project and configuration APIs
+ * The plugin captures the actual graph through lazy providers that Gradle evaluates once
+ * every project has been configured, and hands the result to [VerifyModuleArchitectureTask]
+ * as plain value inputs. The task action never touches `Project` state at execution time,
+ * keeping the check compatible with the configuration cache; any build-script change
+ * invalidates that cache, so a reused entry always reflects the current declarations.
+ *
+ * The snapshot reads declared dependencies through Gradle's project and configuration APIs
  * rather than parsing build scripts, so it stays accurate as the build grows. Only
  * production configurations are inspected (see [isProductionConfiguration]); test
  * configurations are ignored so that shared test fixtures remain free to cross module
@@ -43,73 +49,29 @@ class ModuleArchitecturePlugin : Plugin<Project> {
         // standard task to hook onto.
         target.pluginManager.apply("base")
 
-        val verifyModuleArchitecture = target.tasks.register("verifyModuleArchitecture") {
+        val verifyModuleArchitecture = target.tasks.register<VerifyModuleArchitectureTask>(
+            "verifyModuleArchitecture"
+        ) {
             group = "verification"
             description = "Verifies module-level architecture dependency boundaries."
 
-            // Run at execution time, by which point every module has been configured and
-            // its declared dependencies are available for inspection.
-            doLast {
-                target.verifyModuleArchitecture()
-            }
+            allowedProjectDependencies.set(architectureContract)
+
+            // The providers stay unevaluated until Gradle fingerprints the task inputs,
+            // which happens after every module has been configured — so the snapshot sees
+            // each module's final declared dependencies.
+            actualModulePaths.set(target.provider {
+                target.subprojects.map { project -> project.path }.toSet()
+            })
+            actualProjectDependencies.set(target.provider {
+                target.subprojects.associate { project ->
+                    project.path to project.productionProjectDependencyPaths()
+                }
+            })
         }
 
         target.tasks.named("check") {
             dependsOn(verifyModuleArchitecture)
-        }
-    }
-
-    /**
-     * Validates the module dependency graph against the architecture contract and, if
-     * anything is off, throws a [GradleException] listing every violation.
-     *
-     * All violations are collected before failing (rather than failing on the first one) so
-     * a single run reports every boundary problem at once. Two checks are performed: the set
-     * of declared modules, and each module's production project dependencies.
-     */
-    private fun Project.verifyModuleArchitecture() {
-        val violations: MutableList<String> = mutableListOf()
-        val expectedModulePaths: Set<String> = allowedProjectDependencies.keys
-        val actualModulePaths: Set<String> = subprojects.map { project -> project.path }.toSet()
-
-        // 1. The set of modules in the build must match the contract exactly, so a new or
-        //    removed module cannot silently escape verification.
-        if (actualModulePaths != expectedModulePaths) {
-            violations.add(buildString {
-                append("Declared modules differ from the architecture contract. ")
-                append("Expected ${expectedModulePaths.sorted()}, actual ${actualModulePaths.sorted()}.")
-            })
-        }
-
-        // 2. Each module's production project dependencies must match its allowed set
-        //    exactly — no unexpected dependencies and no missing ones.
-        allowedProjectDependencies.forEach { (modulePath, expectedDependencies) ->
-            val actualDependencies: Set<String> = project(modulePath)
-                .productionProjectDependencyPaths()
-
-            if (actualDependencies != expectedDependencies) {
-                violations.add(buildString {
-                    append("$modulePath has invalid production project dependencies. ")
-                    append("Expected ${expectedDependencies.sorted()}, actual ${actualDependencies.sorted()}.")
-
-                    val unexpectedDependencies: Set<String> = actualDependencies - expectedDependencies
-                    if (unexpectedDependencies.isNotEmpty()) {
-                        append(" Unexpected ${unexpectedDependencies.sorted()}.")
-                    }
-
-                    val missingDependencies: Set<String> = expectedDependencies - actualDependencies
-                    if (missingDependencies.isNotEmpty()) {
-                        append(" Missing ${missingDependencies.sorted()}.")
-                    }
-                })
-            }
-        }
-
-        if (violations.isNotEmpty()) {
-            throw GradleException(
-                "Module architecture verification failed:\n" +
-                    violations.joinToString(separator = "\n") { violation -> "- $violation" }
-            )
         }
     }
 
@@ -146,7 +108,7 @@ class ModuleArchitecturePlugin : Plugin<Project> {
          * against these keys. Each value is the exact set of project dependencies the module
          * is permitted to declare in production configurations.
          */
-        val allowedProjectDependencies: Map<String, Set<String>> = mapOf(
+        val architectureContract: Map<String, Set<String>> = mapOf(
             ":domain" to emptySet(),
             ":data" to setOf(":domain"),
             ":presentation" to setOf(":domain"),

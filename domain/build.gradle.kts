@@ -1,10 +1,6 @@
 plugins {
-    alias(libs.plugins.kotlinJvm)
+    id("com.compose.chi.kotlin.jvm")
     `java-test-fixtures`
-}
-
-kotlin {
-    jvmToolchain(17)
 }
 
 dependencies {
@@ -13,8 +9,6 @@ dependencies {
     // FakeJokeRepository in testFixtures uses Flow / MutableStateFlow.
     testFixturesImplementation(libs.kotlinx.coroutines.core)
 
-    testImplementation(libs.junit)
-    testImplementation(libs.konsist)
     testImplementation(libs.mockk)
     testImplementation(libs.turbine)
     testImplementation(libs.kotlinx.coroutines.test)
